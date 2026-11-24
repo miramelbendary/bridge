@@ -1,64 +1,82 @@
 # Architecture
 
-## Overview
-
-BRIDGE is a **modular monolith**: one FastAPI backend and one Next.js frontend, backed by one
-PostgreSQL database. Modules have clear boundaries so they can be split into services later if a
-real need appears; until then, one deployable unit keeps development and operations simple for a
-university team.
+BRIDGE is a **modular monolith**: one FastAPI backend, one Next.js frontend, one relational database
+(PostgreSQL in production, SQLite for local runs and tests).
 
 ```mermaid
 flowchart LR
-  B[Browser] -->|HTML, Server Actions| N[Next.js server<br/>frontend/]
+  B[Browser] -->|pages, Server Actions| N[Next.js server<br/>frontend/]
   N -->|JSON + Bearer token<br/>server-to-server| A[FastAPI API<br/>backend/]
-  A --> P[(PostgreSQL 17<br/>+ pgvector later)]
-  A -.->|Phase 4| L[AI provider<br/>via abstraction]
-  N -.->|optional| S[Supabase Auth]
-  A -.->|verifies JWT / JWKS| S
+  A --> D[(PostgreSQL / SQLite)]
+  A -->|optional, structured output| C[Claude API]
+  A -->|default| M[Mock AI provider]
 ```
 
-## Backend layering
+The browser never sees the API URL or the access token: it lives in an httpOnly cookie and only the
+Next.js server forwards it.
 
+## Backend modules
+
+| Package | Responsibility |
+|---|---|
+| `app/api/` | HTTP routes only (auth, users, simulation, progress, teach, admin, admin_platform) |
+| `app/simulation/` | **Authoritative rules**: scenario schema, condition language, deterministic engine, loader, competency registry |
+| `app/ai/` | Provider abstraction (mock, Claude), structured schemas, orchestration: limits, validation, fallbacks, usage logs |
+| `app/services/` | Business logic: sessions, scenarios (versions), assessment, progress/recommendations, knowledge (retrieval), access rules, platform settings, demo data, evaluation |
+| `app/security/` | Tokens, passwords, role permissions, rate limiting, security headers, auth dependencies |
+| `app/models/` | SQLAlchemy models (see DATABASE.md) |
+
+## The core rule: AI proposes, code decides
+
+```mermaid
+sequenceDiagram
+  participant S as Student
+  participant API as Session service
+  participant E as Engine (deterministic)
+  participant AI as AI provider
+  S->>API: message to "Karim": "the shipment is delayed..."
+  API->>E: record student message (event E12)
+  API->>AI: persona + permitted knowledge + allowed intents + message
+  AI-->>API: {reply, mood, student_intent_action_id, confidence}
+  API->>API: validate: intent in allowed list? confidence ≥ 0.6? no restricted-fact leak?
+  API->>E: perform_action(inform_customer_promptly)  — availability re-checked by the engine
+  E-->>API: effects applied (trust +12), events, authored reply
+  API->>API: commit state with optimistic lock + idempotency key
 ```
-app/api/        HTTP only: parse request, call a service, shape the response
-app/services/   business logic (no FastAPI imports), transactions, audit entries
-app/security/   tokens, passwords, permissions, rate limiting, headers, auth dependencies
-app/models/     SQLAlchemy ORM models
-app/schemas/    Pydantic request/response models
-app/db/         engine/session, declarative base with naming conventions
-app/core/       settings
-```
 
-Reserved packages (empty until their phase): `simulation/` (3), `ai/` (4), `assessment/` (5),
-`recommendations/` and `knowledge/` (8).
+Budgets, trust, deadlines, outcomes and scores are never written by the AI. A character's
+*restricted* facts are not placed in its prompt until the scenario's `reveal_when` condition holds.
 
-## Architectural decisions (Phase 1)
+## Assessment pipeline
 
-| # | Decision | Rationale |
-|---|---|---|
-| AD-1 | Modular monolith, no microservices | Scope-appropriate; boundaries kept in modules |
-| AD-2 | `create_app(settings)` factory, state on `app.state` | Isolated, parallel-safe tests; no hidden globals |
-| AD-3 | Synchronous SQLAlchemy 2 + psycopg 3 | Simpler code and transactions; FastAPI runs sync routes in a thread pool. Revisit only with measured need |
-| AD-4 | Two auth providers behind one `VerifiedIdentity` | `local` makes the platform runnable and testable without external services; `supabase` is the production path from the spec. Rest of the app is provider-agnostic |
-| AD-5 | Role owned by BRIDGE DB, never by token claims | Supabase `user_metadata` is user-editable; trusting it would allow privilege escalation |
-| AD-6 | Permissions defined in code, not DB tables | Reviewed, versioned, tested; avoids a configurable-RBAC subsystem nobody needs yet. Ownership rules live in services |
-| AD-7 | Registration always creates students; elevated roles only via admin API or CLI | Prevents self-assigned privileges |
-| AD-8 | Portable column types (`Uuid`, `JSON`→`JSONB` on PostgreSQL) | Same migrations run on PostgreSQL (target) and SQLite (fast local tests) |
-| AD-9 | Tests build the schema with Alembic, not `create_all`, and check model/migration drift | Migrations are exercised on every run |
-| AD-10 | Frontend as backend-for-frontend: Server Actions call the API; token in an httpOnly cookie | Token unreadable by browser JS (XSS); no cross-site cookies or browser-side CORS needed; API URL stays private |
-| AD-11 | Next.js 16 with Cache Components | Current stable default; session-dependent UI streams behind `<Suspense>` |
-| AD-12 | Exact dependency pins in `requirements*.lock` and `package-lock.json` | Reproducible builds; ranges in `pyproject.toml` |
+1. Collect evidence from the event log: decisions with justifications, messages, final submissions,
+   each with a stable reference (`E<seq>`).
+2. Ask the assessor (Claude or mock) for one judgement per rubric criterion.
+3. Validate: unknown criteria ignored; level score must be one of the rubric's levels; cited evidence
+   must exist and be relevant to the criterion; otherwise the transparent rule-based evaluation is
+   used for that criterion and the substitution is flagged.
+4. Blend qualitative level with **objective signals** (rule conditions on final state), per the
+   criterion's `objective_weight`.
+5. Criteria with no evidence are marked *insufficient evidence* and excluded from the weighted total.
+6. Weighted overall score computed in Python; report built; prompt-injection patterns flagged for
+   professor review.
 
-## Request flow: authenticated page
+## Scenarios
 
-1. Browser requests `/dashboard`. The static shell is served immediately (partial prerender).
-2. Inside a `<Suspense>` boundary the Next.js server reads the `bridge_session` httpOnly cookie and
-   calls `GET /api/v1/users/me` with `Authorization: Bearer <token>`.
-3. FastAPI verifies the JWT (signature, issuer, audience, expiry), loads the user **and role from
-   the database**, checks the route's permission, and responds.
-4. A 401 redirects to `/login?expired=1`; other errors render the route's error boundary.
+YAML files in `scenarios/<specialization>/` are validated by `ScenarioDefinition` (types, ids,
+cross-references, rubric weights) and synced into immutable `scenario_versions`. Professors can edit
+in the UI; each save is a new version. Sessions reference the exact version they started with.
 
-## Extensibility
+## Key decisions
 
-New specializations are rows in `specializations`, not code. Scenarios (Phase 3) will be versioned,
-schema-validated data in `scenarios/` and the database, executed by one shared engine.
+| Decision | Rationale |
+|---|---|
+| Pure engine with no I/O | Every rule unit-testable and reproducible; AI cannot bypass it |
+| JSON condition language instead of code | Scenario authors cannot execute code; conditions are validated |
+| One append-only event log (instead of separate messages/tasks/submissions tables) | A single ordered evidence source for assessment and audit; state JSON is a derived snapshot |
+| Optimistic locking + idempotency keys | Safe retries and concurrent tabs without database-specific locks |
+| Mock provider as default | Runs anywhere for free; deterministic tests and demos |
+| Structured outputs + server-side validation | AI output is data that must pass checks, never instructions |
+| Lexical TF-IDF retrieval | Portable, explainable, no embedding service; pgvector is a later upgrade |
+| Code-defined permissions + course membership | Reviewable RBAC; professors see only their students |
+| Next.js server actions as backend-for-frontend | Token never in the browser; no CORS from browsers |

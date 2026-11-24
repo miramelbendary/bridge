@@ -1,0 +1,738 @@
+# International Trade — Scenario 1: Delayed International Shipment
+# All companies, people, contracts and figures are fictional and simplified for teaching.
+slug: delayed-shipment
+specialization: international_trade
+title: Delayed International Shipment
+summary: >
+  A supplier announces a three-day delay on spare parts your customer urgently needs. Review the
+  contracts, find out who is responsible, keep the customer informed, compare transport
+  alternatives within a limited budget, and submit a resolution plan.
+estimated_minutes: 35
+review_status: "Draft: commercial and contractual facts require review by an international trade lecturer."
+learning_objectives:
+  - Read a commercial invoice, packing list and sales contract to establish delivery obligations.
+  - Apply Incoterms® 2020 rules (CIF) to decide who bears delay risk before loading.
+  - Communicate proactively and professionally with a customer about a delay.
+  - Compare transport alternatives on cost, time and risk within a budget.
+  - Negotiate a fair cost-sharing arrangement with a supplier.
+
+context:
+  organization: Nile Delta Trading Co. (fictional), Alexandria, Egypt — importer of industrial spare parts
+  student_role: Junior Trade Officer
+  briefing: >
+    Nile Delta Trading imports textile-machinery spare parts from Hanseatic Precision GmbH in
+    Hamburg and resells them to Cairo Weaving Works. Order NDT-2291 (24 drive-belt assemblies and
+    6 tension-control units) must reach Cairo Weaving Works by Thursday: their production line is
+    stopped until the tension-control units arrive. This morning the supplier reported a delay.
+    Your manager has asked you to handle it.
+
+difficulties:
+  beginner:
+    time_limit_minutes: 480
+    hints_available: true
+    description: Generous time, hints available, no extra complications.
+  intermediate:
+    time_limit_minutes: 360
+    hints_available: true
+    description: Less time. The customer complains sooner if not informed.
+  advanced:
+    time_limit_minutes: 300
+    hints_available: true
+    variable_overrides: { budget: 5000 }
+    description: Smaller budget and a possible port strike adds risk.
+  professional:
+    time_limit_minutes: 240
+    hints_available: false
+    variable_overrides: { budget: 5000 }
+    description: Tight time, smaller budget, no hints, extra stakeholder pressure.
+
+variables:
+  budget:
+    label: Contingency budget
+    initial: 6000
+    unit: EUR
+    description: Money your manager authorised for solving this problem.
+  customer_trust:
+    label: Customer trust
+    initial: 60
+    min: 0
+    max: 100
+    unit: "%"
+  supplier_relationship:
+    label: Supplier relationship
+    initial: 65
+    min: 0
+    max: 100
+    unit: "%"
+  days_late:
+    label: Expected delay (critical parts)
+    initial: 3
+    min: 0
+    unit: days
+  risk_exposure:
+    label: Risk exposure
+    initial: 50
+    min: 0
+    max: 100
+    unit: "%"
+  penalty_risk:
+    label: Contract penalty risk
+    initial: 1
+    min: 0
+    max: 1
+    visible: false
+
+characters:
+  - id: mona
+    name: Mona Hassan
+    role: Operations Manager
+    kind: manager
+    organization: Nile Delta Trading Co.
+    personality: Calm, experienced, expects juniors to take ownership but to escalate spending decisions.
+    communication_style: Brief, practical, asks "what do you recommend?"
+    objectives:
+      - Keep Cairo Weaving Works as a long-term customer.
+      - Stay within the EUR 6,000 contingency budget unless there is a strong business case.
+    knowledge:
+      - The contingency budget for this case is EUR 6,000.
+      - Cairo Weaving Works generates about 18% of the company's annual margin.
+      - Spending above the contingency needs a written business case.
+    restricted:
+      - fact: She would approve up to EUR 3,000 above budget if the supplier contributes and the customer would otherwise face a line stoppage.
+        reveal_when: { action_taken: ask_manager_budget }
+    initial_mood: calm
+    faq:
+      - keywords: [who is responsible, responsib, liable, fault]
+        reply: "Check the purchase contract with Hanseatic and the Incoterm. Who had to get the goods on board, and by when? That tells you where the delay sits."
+      - keywords: [what should i do, help, advice, recommend]
+        reply: "Start with the documents, then talk to the supplier and the customer. Come back to me with a recommendation, not just a problem."
+      - keywords: [customer, karim]
+        reply: "Karim at Cairo Weaving is reasonable as long as he hears bad news from us first, not from his production manager."
+    fallback_replies:
+      - "I'm between meetings. Send me a short summary and your recommendation."
+      - "Let's keep this focused: what are the options and what do they cost?"
+
+  - id: karim
+    name: Karim Adel
+    role: Procurement Lead
+    kind: customer
+    organization: Cairo Weaving Works (fictional)
+    personality: Under pressure from his production director, values honesty and early warnings.
+    communication_style: Direct, polite but becomes sharp when surprised by problems.
+    objectives:
+      - Restart the stopped production line as soon as possible.
+      - Avoid surprises; get a realistic delivery date.
+    knowledge:
+      - The line is stopped because two tension-control units failed.
+      - The drive-belt assemblies are for planned maintenance next month and are not urgent.
+      - Their sales contract with Nile Delta includes a late-delivery penalty of 0.5% of order value per day, capped at 5%.
+    restricted:
+      - fact: Only the 6 tension-control units are urgent; a partial early delivery of those would restart the line.
+        reveal_when: { any: [ { action_taken: inform_customer_promptly }, { action_taken: respond_to_complaint } ] }
+    initial_mood: neutral
+    faq:
+      - keywords: [urgent, which parts, priority, critical, need first]
+        reply: "Honestly, what stops us is the tension-control units. The belts can wait a few weeks."
+      - keywords: [penalty, compensation, discount]
+        reply: "Our contract has a penalty clause for late delivery. I'd rather not use it — I'd rather have the parts."
+      - keywords: [when, date, arrive, eta]
+        reply: "I need a date I can rely on. Thursday was the plan. What can you actually commit to?"
+    fallback_replies:
+      - "Please keep me updated. My director asks me every hour."
+      - "I need a reliable date and a clear plan, nothing more."
+
+  - id: jonas
+    name: Jonas Weber
+    role: Export Coordinator
+    kind: supplier
+    organization: Hanseatic Precision GmbH (fictional), Hamburg
+    personality: Friendly and cooperative, slightly defensive about mistakes.
+    communication_style: Formal English, precise about dates and documents.
+    objectives:
+      - Keep Nile Delta as a customer.
+      - Limit extra costs for Hanseatic.
+    knowledge:
+      - The goods were sold CIF Alexandria (Incoterms 2020) with latest shipment date 3 March.
+      - The container missed vessel MV Aurora Bay and is booked on MV Cape Meridian, departing 3 days later.
+      - Hanseatic arranged and paid for the main carriage as required under CIF.
+    restricted:
+      - fact: The container missed the vessel because Hanseatic submitted the export documents after the carrier's cut-off time — an internal error.
+        reveal_when: { action_taken: ask_supplier_cause }
+      - fact: Hanseatic is prepared to contribute up to 50% of reasonable air-freight costs for the urgent units to protect the relationship.
+        reveal_when: { all: [ { action_taken: ask_supplier_cause }, { action_taken: conclude_supplier_responsible } ] }
+    initial_mood: concerned
+    faq:
+      - keywords: [incoterm, cif, terms]
+        reply: "Our contract is CIF Alexandria, Incoterms 2020. We arrange and pay sea freight and insurance to Alexandria."
+      - keywords: [new date, next vessel, eta, arrive]
+        reply: "The container is now on MV Cape Meridian, three days later than planned. I can send you the updated booking confirmation."
+      - keywords: [air, split, partial]
+        reply: "The six tension-control units are packed separately on one pallet, so they could be pulled out and flown if needed."
+    fallback_replies:
+      - "I will check internally and come back to you shortly."
+      - "We regret the inconvenience and want to find a solution together."
+
+  - id: layla
+    name: Layla Farouk
+    role: Freight Forwarding Agent
+    kind: stakeholder
+    organization: BlueRoute Logistics (fictional)
+    personality: Fast, numbers-oriented, honest about risks.
+    communication_style: Short messages with figures.
+    objectives:
+      - Offer workable transport solutions.
+    knowledge:
+      - Partial air freight of the 6 tension-control units Hamburg–Cairo costs about EUR 4,200 and takes 2 days door-to-door.
+      - Full air freight of the whole order costs about EUR 11,500.
+      - Waiting for the next vessel costs nothing extra but keeps the 3-day delay.
+    initial_mood: calm
+    min_difficulty: beginner
+    faq:
+      - keywords: [customs, clearance]
+        reply: "Air cargo into Cairo usually clears in one working day if the invoice and packing list match exactly."
+      - keywords: [risk, strike]
+        reply: "Sea freight through Alexandria has a small congestion risk this month. Air is more predictable but pricier."
+    fallback_replies:
+      - "Give me the weights and dimensions and I'll confirm a rate."
+      - "I can hold a quote for 24 hours."
+
+documents:
+  - id: commercial_invoice
+    title: Commercial Invoice HP-INV-7781
+    kind: invoice
+    body: |
+      **Seller:** Hanseatic Precision GmbH, Hamburg, Germany
+      **Buyer:** Nile Delta Trading Co., Alexandria, Egypt
+      **Invoice no.:** HP-INV-7781 · **Order:** NDT-2291 · **Terms:** CIF Alexandria (Incoterms® 2020)
+
+      | Item | Qty | Unit price (EUR) | Total (EUR) |
+      |---|---|---|---|
+      | Drive-belt assembly DB-40 | 24 | 610 | 14,640 |
+      | Tension-control unit TC-9 | 6 | 3,150 | 18,900 |
+      | **Total CIF Alexandria** | | | **33,540** |
+
+      Payment: 30 days after bill of lading date. Country of origin: Germany.
+  - id: packing_list
+    title: Packing List HP-PL-7781
+    kind: packing_list
+    body: |
+      | Package | Contents | Gross weight | Dimensions |
+      |---|---|---|---|
+      | Pallet 1 | 24 × DB-40 drive-belt assemblies | 410 kg | 120×100×110 cm |
+      | Pallet 2 | 6 × TC-9 tension-control units | 95 kg | 80×60×70 cm |
+
+      Total: 2 pallets, 505 kg, in a shared 20' container (LCL).
+  - id: purchase_contract
+    title: Purchase Contract (extract) — Hanseatic Precision → Nile Delta
+    kind: contract
+    body: |
+      **Clause 3 — Delivery.** Delivery CIF Alexandria, Incoterms® 2020. Latest shipment date (on board): **3 March**.
+
+      **Clause 4 — Notification.** The Seller shall notify the Buyer without delay of any event that may prevent shipment by the agreed date.
+
+      **Clause 7 — Delay.** If the Seller fails to ship by the latest shipment date for reasons within its control, the Seller shall bear reasonable additional costs of expedited transport agreed with the Buyer, or the Buyer may claim liquidated damages of 0.5% of the goods value per week of delay.
+  - id: customer_contract
+    title: Sales Contract (extract) — Nile Delta → Cairo Weaving Works
+    kind: contract
+    body: |
+      **Delivery:** DAP Cairo Weaving Works, 10th of Ramadan City, by **Thursday 7 March**.
+
+      **Late delivery:** 0.5% of the order value (EUR 41,900) per day of delay, capped at 5%.
+
+      **Partial deliveries:** permitted with the Buyer's agreement.
+  - id: transport_quotes
+    title: BlueRoute Logistics — Transport Options
+    kind: quotation
+    initially_visible: false
+    body: |
+      | Option | Scope | Cost (EUR) | Arrival at customer | Notes |
+      |---|---|---|---|---|
+      | A. Next vessel | Whole order by sea | 0 extra | 3 days late | Port congestion risk this month |
+      | B. Partial air freight | Pallet 2 (6 × TC-9) by air, rest by sea | 4,200 | On time for TC-9 | Rest arrives 3 days late |
+      | C. Full air freight | Both pallets by air | 11,500 | On time | Exceeds contingency budget |
+
+      Quotes valid 24 hours. Excludes import duties (unchanged across options).
+  - id: strike_notice
+    title: Port Advisory — Possible Industrial Action
+    kind: notice
+    initially_visible: false
+    min_difficulty: advanced
+    body: |
+      Unions at Alexandria container terminals have announced a possible 48-hour stoppage next week.
+      Vessels arriving during the stoppage may face additional berthing delays.
+
+tasks:
+  - id: review_documents
+    title: Review the shipment documents
+    description: Read the invoice, packing list and both contracts.
+    hints:
+      - "Compare the delivery terms in the purchase contract (CIF) with the customer contract (DAP) — two different obligations."
+      - "Note which pallet contains the parts that stopped the customer's production line."
+  - id: contact_supplier
+    title: Contact the supplier about the cause
+    description: Find out why the shipment is delayed and the new schedule.
+    hints:
+      - "Ask Jonas directly why the container missed the vessel. The cause matters for responsibility."
+  - id: identify_responsibility
+    title: Identify contractual responsibility
+    description: Decide who bears the consequences of the delay and why.
+    hints:
+      - "Under CIF, the seller must get the goods on board by the agreed shipment date. Was the delay within the seller's control?"
+  - id: inform_customer
+    title: Inform the customer
+    description: Tell Cairo Weaving Works about the delay and what you are doing about it.
+    hints:
+      - "Bad news travels best early. Tell Karim before his director hears it elsewhere, and ask which parts are truly urgent."
+  - id: investigate_alternatives
+    title: Investigate transport alternatives
+    description: Get options from the freight forwarder.
+    hints:
+      - "Ask Layla at BlueRoute for quotes, including partial shipments."
+  - id: decide_solution
+    title: Choose a transport solution
+    description: Select and justify a solution considering cost, time and risk.
+    hints:
+      - "The packing list shows the urgent units are on a separate pallet. Do you need to fly everything?"
+  - id: submit_plan
+    title: Submit a resolution plan
+    description: Write a short plan for your manager.
+    hints:
+      - "Structure: situation, responsibility, chosen option with cost, customer communication, risks, next steps."
+
+initial_inbox:
+  - id: supplier_delay_notice
+    sender: jonas
+    subject: "Order NDT-2291 — shipment delay"
+    body: |
+      Dear Nile Delta team,
+
+      We regret to inform you that the container with order NDT-2291 could not be loaded on MV Aurora Bay.
+      It is now booked on MV Cape Meridian, departing three days later. Updated documents will follow.
+
+      Kind regards,
+      Jonas Weber, Hanseatic Precision GmbH
+  - id: manager_instructions
+    sender: mona
+    subject: "Please handle the Hanseatic delay"
+    body: |
+      Hi,
+
+      Hanseatic just told us order NDT-2291 is delayed. Cairo Weaving's line is down until they get the parts,
+      so this matters. You have a contingency of EUR 6,000. Check the contracts, keep Karim informed,
+      look at options with BlueRoute, and send me a plan with your recommendation.
+
+      Mona
+
+actions:
+  - id: review_shipment_documents
+    label: Review shipment documents
+    description: Carefully read the invoice, packing list and both contract extracts.
+    category: investigation
+    duration_minutes: 20
+    completes_tasks: [review_documents]
+    effects: [ { var: risk_exposure, value: -5 } ]
+    consequence: You notice the urgent TC-9 units are packed on a separate pallet and the purchase contract fixes a latest shipment date of 3 March.
+    training_feedback: Good start — always establish the contractual facts before acting.
+
+  - id: ask_supplier_cause
+    label: Ask the supplier why the shipment missed the vessel
+    description: Email Jonas at Hanseatic asking for the cause and the new schedule.
+    category: communication
+    duration_minutes: 20
+    via_character: jonas
+    intent_keywords: [why, cause, reason, what happened, explain, missed the vessel]
+    completes_tasks: [contact_supplier]
+    effects: [ { var: risk_exposure, value: -5 } ]
+    consequence: Jonas admits the export documents were filed after the carrier's cut-off — an error on Hanseatic's side.
+    character_response: "To be transparent: our export documents were submitted after the carrier's cut-off, so the container was rolled to the next vessel. This was our internal error and I apologise."
+    training_feedback: Asking for the cause is essential — responsibility under CIF depends on whether the delay was within the seller's control.
+
+  - id: conclude_supplier_responsible
+    label: "Conclude: the supplier bears responsibility"
+    description: Record that the delay is within the seller's control under the CIF purchase contract.
+    category: decision
+    duration_minutes: 10
+    requires_justification: true
+    exclusive_group: responsibility
+    completes_tasks: [identify_responsibility]
+    effects: [ { var: risk_exposure, value: -10 } ]
+    consequence: You record that, under CIF and Clause 7, Hanseatic must bear reasonable extra costs for expedited transport.
+    training_feedback: Correct reasoning links the Incoterm (seller ships on board by the date) with Clause 7 (delay within the seller's control).
+
+  - id: conclude_buyer_responsible
+    label: "Conclude: our company bears responsibility"
+    description: Record that Nile Delta must absorb the consequences of the delay.
+    category: decision
+    duration_minutes: 10
+    requires_justification: true
+    exclusive_group: responsibility
+    completes_tasks: [identify_responsibility]
+    effects: [ { var: risk_exposure, value: 10 } ]
+    consequence: You record that Nile Delta should absorb the delay costs. You lose the basis to ask Hanseatic for a contribution.
+    training_feedback: Re-check this. Under CIF the seller must ship by the agreed date; Clause 7 assigns costs when the delay is within the seller's control.
+
+  - id: inform_customer_promptly
+    label: Inform the customer about the delay now
+    description: Contact Karim proactively, explain the delay and that you are working on options.
+    category: communication
+    duration_minutes: 15
+    via_character: karim
+    intent_keywords: [delay, delayed, late, inform, let you know, update, apolog, unfortunately]
+    available_when: { not: { event_fired: customer_complaint } }
+    completes_tasks: [inform_customer]
+    effects:
+      - { var: customer_trust, value: 12 }
+      - { var: risk_exposure, value: -5 }
+    consequence: Karim appreciates hearing it from you first and tells you only the tension-control units are urgent.
+    character_response: "Thank you for telling me straight away. To be clear — only the six tension-control units are critical. If those arrive by Thursday, we can restart the line."
+    training_feedback: Proactive communication protects trust and often reveals information (here — what is truly urgent).
+
+  - id: respond_to_complaint
+    label: Respond to the customer's complaint
+    description: Reply to Karim's complaint, apologise and explain what you are doing.
+    category: communication
+    duration_minutes: 15
+    via_character: karim
+    intent_keywords: [sorry, apolog, delay, update, understand, inform]
+    available_when:
+      all:
+        - { event_fired: customer_complaint }
+        - { not: { action_taken: inform_customer_promptly } }
+    completes_tasks: [inform_customer]
+    effects: [ { var: customer_trust, value: 5 } ]
+    consequence: Karim accepts your apology but is clearly less confident in Nile Delta.
+    character_response: "I appreciate the apology, but I should not have heard this from our warehouse. The tension-control units are what we need — everything else can wait."
+    training_feedback: Recovering after a complaint works, but trust recovers less than if you had informed the customer first.
+
+  - id: request_transport_quotes
+    label: Request transport quotations
+    description: Ask BlueRoute Logistics for options, including partial air freight.
+    category: investigation
+    duration_minutes: 30
+    via_character: layla
+    intent_keywords: [quote, quotation, option, air freight, alternative, rate, cost]
+    completes_tasks: [investigate_alternatives]
+    reveals_documents: [transport_quotes]
+    consequence: BlueRoute sends three options (next vessel, partial air, full air).
+    character_response: "Quotes are in your documents: A) next vessel, no extra cost, 3 days late; B) fly pallet 2 only, EUR 4,200, on time; C) fly everything, EUR 11,500."
+
+  - id: ask_manager_budget
+    label: Ask the manager about budget flexibility
+    description: Ask Mona whether spending above the contingency could be approved.
+    category: communication
+    duration_minutes: 10
+    via_character: mona
+    intent_keywords: [budget, approve, approval, authoris, authoriz, extra money, above]
+    consequence: Mona explains that she could approve up to EUR 3,000 more only with a supplier contribution and a clear business case.
+    character_response: "I could stretch by up to EUR 3,000 — but only if Hanseatic contributes and the customer's line would otherwise stay down. Bring me the numbers."
+
+  - id: negotiate_cost_share
+    label: Negotiate a cost contribution from the supplier
+    description: Ask Hanseatic to contribute to expedited transport costs under Clause 7.
+    category: communication
+    duration_minutes: 20
+    via_character: jonas
+    intent_keywords: [contribut, share the cost, cost share, split the cost, cover, compensat, clause 7, bear the cost]
+    available_when:
+      all:
+        - { action_taken: ask_supplier_cause }
+        - { action_taken: conclude_supplier_responsible }
+    effects:
+      - { var: budget, value: 2100 }
+      - { var: supplier_relationship, value: 5 }
+    consequence: Hanseatic agrees to credit EUR 2,100 (50% of partial air freight) against the invoice.
+    character_response: "Given our error, we accept to contribute 50% of the partial air-freight cost — EUR 2,100 — as a credit note against invoice HP-INV-7781."
+    training_feedback: You used the contract (Clause 7) and the cause of the delay as leverage while keeping the relationship constructive.
+
+  - id: demand_full_compensation
+    label: Demand that the supplier pays all costs and penalties
+    description: Send a firm demand that Hanseatic pays every extra cost and the customer's penalty.
+    category: communication
+    duration_minutes: 15
+    via_character: jonas
+    intent_keywords: [pay everything, all costs, full compensation, demand, unacceptable]
+    available_when: { action_taken: ask_supplier_cause }
+    effects:
+      - { var: supplier_relationship, value: -20 }
+      - { var: risk_exposure, value: 5 }
+    consequence: Jonas refers the matter to his legal department. The relationship cools and nothing is agreed quickly.
+    character_response: "I understand your frustration, but I must forward a demand of this kind to our legal department. That will take some days."
+
+  - id: choose_wait_next_vessel
+    label: "Option A: wait for the next vessel"
+    description: Accept the 3-day delay at no extra transport cost.
+    category: decision
+    duration_minutes: 15
+    requires_justification: true
+    exclusive_group: transport
+    available_when: { action_taken: request_transport_quotes }
+    completes_tasks: [decide_solution]
+    effects:
+      - { var: customer_trust, value: -10 }
+      - { var: risk_exposure, value: 10 }
+    consequence: The whole order arrives 3 days late. The customer's line stays down and the penalty clause applies.
+    training_feedback: Cheapest in transport cost, but consider the customer's stopped line, the penalty clause and the relationship.
+
+  - id: choose_partial_air
+    label: "Option B: fly the 6 urgent units, ship the rest by sea"
+    description: EUR 4,200 for partial air freight of pallet 2.
+    category: decision
+    duration_minutes: 15
+    requires_justification: true
+    exclusive_group: transport
+    available_when: { action_taken: request_transport_quotes }
+    completes_tasks: [decide_solution]
+    effects:
+      - { var: budget, value: -4200 }
+      - { var: days_late, op: set, value: 0 }
+      - { var: penalty_risk, op: set, value: 0 }
+      - { var: customer_trust, value: 8 }
+      - { var: risk_exposure, value: -15 }
+    consequence: The tension-control units arrive by Thursday; the line restarts. The belts follow by sea (agreed partial delivery).
+    training_feedback: A targeted solution — the packing list made it possible to fly only what is urgent.
+
+  - id: choose_full_air
+    label: "Option C: fly the whole order"
+    description: EUR 11,500 for air freight of both pallets.
+    category: decision
+    duration_minutes: 15
+    requires_justification: true
+    exclusive_group: transport
+    available_when: { action_taken: request_transport_quotes }
+    completes_tasks: [decide_solution]
+    effects:
+      - { var: budget, value: -11500 }
+      - { var: days_late, op: set, value: 0 }
+      - { var: penalty_risk, op: set, value: 0 }
+      - { var: customer_trust, value: 8 }
+      - { var: risk_exposure, value: -20 }
+    consequence: Everything arrives on time, but the cost exceeds the contingency budget.
+    training_feedback: Effective on time, but most of the cost buys speed for parts that were not urgent.
+
+  - id: brief_manager
+    label: Brief your manager
+    description: Send Mona a short status update.
+    category: communication
+    duration_minutes: 10
+    via_character: mona
+    intent_keywords: [status, summary, recommend, update, plan, brief]
+    effects: [ { var: risk_exposure, value: -5 } ]
+    consequence: Mona thanks you for the update and waits for your written plan.
+    character_response: "Thanks — clear. Put it in your written plan with the cost and the customer impact and I'll sign off."
+
+events:
+  - id: customer_complaint
+    title: Customer complaint
+    at_minute: 120
+    when: { not: { action_taken: inform_customer_promptly } }
+    message:
+      sender: karim
+      subject: "Why did we hear about the delay from our warehouse?!"
+      body: |
+        Our warehouse just told me the Hanseatic container missed its vessel. Why am I hearing this from them and not from you?
+        Our line is stopped. I need a plan today.
+        — Karim Adel
+    effects:
+      - { var: customer_trust, value: -15 }
+      - { var: risk_exposure, value: 10 }
+    notification: Cairo Weaving Works has complained that they were not informed about the delay.
+
+  - id: customer_complaint_early
+    title: Customer complaint (early)
+    at_minute: 75
+    min_difficulty: intermediate
+    when: { all: [ { not: { action_taken: inform_customer_promptly } }, { not: { event_fired: customer_complaint } } ] }
+    message:
+      sender: karim
+      subject: "Status of NDT-2291?"
+      body: |
+        I have heard rumours about a problem with our order. Can you confirm the delivery date?
+        — Karim Adel
+    effects: [ { var: customer_trust, value: -5 } ]
+    notification: The customer is asking about the order status.
+
+  - id: port_strike_warning
+    title: Port strike warning
+    at_minute: 60
+    min_difficulty: advanced
+    reveals_documents: [strike_notice]
+    effects: [ { var: risk_exposure, value: 15 } ]
+    notification: A port advisory warns of possible industrial action at Alexandria next week.
+
+  - id: director_escalation
+    title: Customer director escalation
+    at_minute: 150
+    min_difficulty: professional
+    when: { not: { action_taken: choose_partial_air } }
+    message:
+      sender: karim
+      subject: "Our director is asking for compensation"
+      body: |
+        Our production director wants to know whether Nile Delta will compensate us for the downtime.
+        Please include this in your answer.
+    effects: [ { var: risk_exposure, value: 5 } ]
+    notification: The customer's director is now involved and asking about compensation.
+
+submissions:
+  - id: resolution_plan
+    title: Resolution plan for your manager
+    task_id: submit_plan
+    min_words: 120
+    prompt: >
+      Write a resolution plan for Mona (about 150–300 words): the situation, who is contractually
+      responsible and why, the transport option you chose with its cost and budget impact, how you
+      communicated with the customer, remaining risks, and next steps.
+    template: |
+      Situation:
+      Contractual responsibility:
+      Chosen solution and cost:
+      Customer communication:
+      Risks:
+      Next steps:
+
+outcomes:
+  - id: excellent_resolution
+    title: Line restarted on time, costs shared
+    description: The urgent units arrived on time, the customer was kept informed, and the supplier shared the extra cost within budget.
+    when:
+      all:
+        - { var: days_late, op: "==", value: 0 }
+        - { var: budget, op: ">=", value: 0 }
+        - { action_taken: negotiate_cost_share }
+        - { var: customer_trust, op: ">=", value: 65 }
+  - id: on_time_over_budget
+    title: On time, but over budget
+    description: The customer received the parts on time, but the solution exceeded the authorised contingency.
+    when: { all: [ { var: days_late, op: "==", value: 0 }, { var: budget, op: "<", value: 0 } ] }
+  - id: on_time
+    title: Line restarted on time
+    description: The critical parts arrived on time within budget, though some opportunities (cost sharing or proactive communication) were missed.
+    when: { var: days_late, op: "==", value: 0 }
+  - id: late_relationship_kept
+    title: Delivered late, relationship intact
+    description: The order arrived late and the penalty clause applies, but the customer still trusts Nile Delta.
+    when: { var: customer_trust, op: ">=", value: 55 }
+  - id: late_relationship_damaged
+    title: Delivered late, relationship damaged
+    description: The order arrived late, the customer's line stayed down and trust in Nile Delta has fallen.
+
+alternative_approaches:
+  - Fly only the urgent tension-control units (Option B) and ask the supplier to contribute under Clause 7 — usually the best balance of cost, time and relationship.
+  - Wait for the next vessel (Option A) but agree a partial-delivery plan and penalty waiver with the customer — defensible only if the customer's line can run on spare parts.
+  - Fly the whole order (Option C) with a written business case and supplier contribution — justifiable only if the belts were also urgent.
+
+rubric:
+  title: International Trade — delay management rubric
+  criteria:
+    - id: commercial_knowledge
+      name: Commercial knowledge application
+      competency: commercial_knowledge
+      weight: 20
+      description: Uses the commercial documents (invoice, packing list, contracts) correctly to inform decisions.
+      evidence_sources: [actions, "submission:resolution_plan"]
+      objective_weight: 0.4
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: review_shipment_documents }, points: 35, description: "Reviewed the shipment documents." }
+        - { when: { action_taken: choose_partial_air }, points: 35, description: "Used the packing list to fly only the urgent pallet." }
+      expected_concepts: [packing list, pallet, invoice, tension-control, partial, cif, incoterm]
+      concepts_to_revise: [Commercial invoice and packing list, Partial shipments]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Documents not used or misread." }
+        - { score: 50, label: Developing, descriptor: "Some document facts used, key details missed." }
+        - { score: 75, label: Proficient, descriptor: "Key document facts used to support the decision." }
+        - { score: 95, label: Excellent, descriptor: "Documents used precisely, including pallet split and values." }
+    - id: contractual_understanding
+      name: Contractual understanding
+      competency: contractual_understanding
+      weight: 15
+      description: Correctly identifies responsibility under CIF and the contract clauses.
+      evidence_sources: [actions, "submission:resolution_plan", "messages:jonas"]
+      objective_weight: 0.5
+      objective_base: 20
+      objective_signals:
+        - { when: { action_taken: ask_supplier_cause }, points: 25, description: "Established the cause of the delay." }
+        - { when: { action_taken: conclude_supplier_responsible }, points: 55, description: "Concluded the seller bears responsibility." }
+        - { when: { action_taken: conclude_buyer_responsible }, points: -15, description: "Concluded the buyer bears responsibility." }
+      expected_concepts: [cif, incoterm, shipment date, clause 7, on board, seller, responsib, cut-off]
+      concepts_to_revise: ["Incoterms® 2020: CIF obligations", Delay and liquidated-damages clauses]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Responsibility not addressed or wrongly assigned without reasoning." }
+        - { score: 50, label: Developing, descriptor: "Responsibility identified with weak or partial reasoning." }
+        - { score: 75, label: Proficient, descriptor: "Correct responsibility with reference to CIF or the contract." }
+        - { score: 95, label: Excellent, descriptor: "Correct and precise reasoning linking CIF, shipment date and Clause 7." }
+    - id: financial_awareness
+      name: Financial awareness
+      competency: financial_awareness
+      weight: 15
+      description: Weighs costs, budget and penalties when choosing a solution.
+      evidence_sources: [actions, "submission:resolution_plan"]
+      objective_weight: 0.6
+      objective_base: 40
+      objective_signals:
+        - { when: { var: budget, op: ">=", value: 0 }, points: 30, description: "Stayed within the authorised budget." }
+        - { when: { var: penalty_risk, op: "==", value: 0 }, points: 20, description: "Avoided the late-delivery penalty." }
+        - { when: { action_taken: negotiate_cost_share }, points: 15, description: "Recovered part of the cost from the supplier." }
+        - { when: { var: budget, op: "<", value: 0 }, points: -30, description: "Exceeded the authorised budget." }
+      expected_concepts: [budget, eur, cost, penalty, "4,200", contingency]
+      concepts_to_revise: [Total landed cost, Cost–benefit comparison of transport modes]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Costs ignored." }
+        - { score: 50, label: Developing, descriptor: "Costs mentioned without comparison." }
+        - { score: 75, label: Proficient, descriptor: "Options compared on cost and penalty within budget." }
+        - { score: 95, label: Excellent, descriptor: "Clear financial reasoning including recovery from the supplier." }
+    - id: negotiation
+      name: Negotiation
+      competency: negotiation
+      weight: 15
+      description: Negotiates a fair outcome with the supplier while preserving the relationship.
+      evidence_sources: [actions, "messages:jonas"]
+      objective_weight: 0.5
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: negotiate_cost_share }, points: 60, description: "Secured a supplier contribution." }
+        - { when: { action_taken: demand_full_compensation }, points: -20, description: "Escalated with a maximal demand." }
+      expected_concepts: [contribut, share, clause 7, relationship, propose, credit]
+      concepts_to_revise: [Principled negotiation (interests vs positions)]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "No negotiation attempted." }
+        - { score: 50, label: Developing, descriptor: "Asked for compensation without basis or damaged the relationship." }
+        - { score: 75, label: Proficient, descriptor: "Reasoned request grounded in the contract." }
+        - { score: 95, label: Excellent, descriptor: "Fair agreement reached and relationship strengthened." }
+    - id: risk_management
+      name: Risk management
+      competency: risk_management
+      weight: 15
+      description: Identifies and reduces operational and commercial risks.
+      evidence_sources: [actions, "submission:resolution_plan"]
+      objective_weight: 0.5
+      objective_base: 20
+      objective_signals:
+        - { when: { var: risk_exposure, op: "<=", value: 30 }, points: 60, description: "Brought risk exposure down substantially." }
+        - { when: { all: [ { var: risk_exposure, op: ">", value: 30 }, { var: risk_exposure, op: "<=", value: 45 } ] }, points: 35, description: "Reduced risk exposure somewhat." }
+      expected_concepts: [risk, contingency, strike, congestion, backup, monitor]
+      concepts_to_revise: [Supply-chain risk identification and mitigation]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Risks not considered." }
+        - { score: 50, label: Developing, descriptor: "Some risks noted, no mitigation." }
+        - { score: 75, label: Proficient, descriptor: "Main risks identified with mitigation." }
+        - { score: 95, label: Excellent, descriptor: "Comprehensive risk view with monitoring and fallback." }
+    - id: communication
+      name: Professional communication
+      competency: communication
+      weight: 20
+      description: Communicates clearly, early and professionally with customer, supplier and manager.
+      evidence_sources: ["messages", "submission:resolution_plan"]
+      objective_weight: 0.4
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: inform_customer_promptly }, points: 50, description: "Informed the customer before they complained." }
+        - { when: { action_taken: respond_to_complaint }, points: 20, description: "Responded to the customer's complaint." }
+        - { when: { action_taken: brief_manager }, points: 15, description: "Kept the manager informed." }
+      expected_concepts: [inform, customer, apolog, update, thursday, plan, recommend]
+      concepts_to_revise: [Delivering bad news professionally]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Stakeholders not informed or communication unprofessional." }
+        - { score: 50, label: Developing, descriptor: "Communication late or unclear." }
+        - { score: 75, label: Proficient, descriptor: "Timely, clear and polite communication." }
+        - { score: 95, label: Excellent, descriptor: "Proactive, structured and audience-appropriate communication." }

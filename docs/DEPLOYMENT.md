@@ -1,36 +1,40 @@
 # Deployment
 
-> Phase 1 provides local development and CI only. Production hosting is configured in Phase 11.
-> Nothing below has been deployed yet.
+> Local runs are verified (`start.ps1`). Docker and cloud hosting below are prepared but were not
+> executed during development.
 
-## Local stack
-See README → Quick start. Docker Compose (`infrastructure/docker-compose.yml`) runs PostgreSQL 17
-(pgvector image) and the API; the frontend runs with `npm run dev`.
+## Local
+See README / SHARING.md: `start.cmd` (Windows) or `./start.sh`.
 
-## Target production topology
-| Component | Target | Notes |
+## Docker Compose (single machine)
+`cp .env.example .env` → set secrets → `docker compose up --build`. Services: `db` (PostgreSQL 17,
+pgvector image), `backend` (runs migrations, scenario sync and — outside production — demo data),
+`frontend`. Ports are bound to 127.0.0.1; put a TLS reverse proxy in front for any non-local use.
+
+## Production topology
+| Component | Suggested host | Settings |
 |---|---|---|
-| Frontend | Vercel | Set `BRIDGE_API_URL` (server-only) to the API's public URL |
-| Backend | Any container host (e.g. Render, Fly.io, Railway, a university VM) | Image from `backend/Dockerfile`; runs `alembic upgrade head` at start |
-| Database | Managed PostgreSQL 17 (e.g. Supabase Postgres) | Enable automated backups and point-in-time recovery |
-| Auth | Supabase Auth | `AUTH_PROVIDER=supabase`, `SUPABASE_URL` (+ `SUPABASE_JWT_SECRET` for legacy HS256 projects) |
+| Frontend | Vercel (root `frontend/`) | `BRIDGE_API_URL=https://api.example.edu` (server-only). Do not set `BRIDGE_DEMO_MODE`. |
+| Backend | Container host (Render, Fly.io, Railway, university VM) using `backend/Dockerfile` with the repo root as build context | see below |
+| Database | Managed PostgreSQL 17 with automated backups / point-in-time recovery | |
+| Auth | Supabase Auth or university SSO | `AUTH_PROVIDER=supabase`, `SUPABASE_URL` |
 
-## Required production environment (backend)
-| Variable | Notes |
-|---|---|
-| `ENVIRONMENT=production` | Enables HSTS, disables API docs, enforces strict validation |
-| `DATABASE_URL` | `postgresql+psycopg://…` (SQLite is rejected) |
-| `AUTH_PROVIDER` | `supabase` recommended for pilots |
-| `LOCAL_JWT_SECRET` | Only for `local`; ≥ 32 random characters; default value is rejected |
-| `CORS_ORIGINS` | Exact frontend origin(s); `*` is rejected |
-| `FORWARDED_ALLOW_IPS` | Address of the reverse proxy, so client IPs (rate limiting, audit) are correct |
+Backend environment for production:
+```
+ENVIRONMENT=production            # HSTS on, API docs off, demo seeding refused, strict checks
+DATABASE_URL=postgresql+psycopg://...
+LOCAL_JWT_SECRET=<48+ random chars>   # only if AUTH_PROVIDER=local
+CORS_ORIGINS=https://bridge.example.edu
+AI_PROVIDER=anthropic              # optional
+ANTHROPIC_API_KEY=<from the host's secret manager>
+FORWARDED_ALLOW_IPS=<reverse proxy address>
+```
+Create the first administrator: `python -m app.cli create-user --role admin --email ... --display-name ...`
+(password read from `BRIDGE_NEW_USER_PASSWORD` or prompted).
 
-Store secrets in the host's secret manager, never in the repository or image.
-
-## Release checklist (to be completed in Phase 11)
-1. CI green on `main`.
-2. Database backup taken; `alembic upgrade head` tested against a staging copy.
-3. Deploy backend; check `/health/ready`.
-4. Deploy frontend; smoke-test sign-in and dashboard.
-5. Create administrator via `python -m app.cli create-user --role admin` (local auth) or promote a
-   Supabase-provisioned user through the admin API.
+## Release checklist
+1. CI green (backend on PostgreSQL, frontend build, e2e).
+2. Backup the database; run `alembic upgrade head` against a staging copy first.
+3. Deploy backend; check `/health/ready`. Deploy frontend; smoke-test sign-in and one scenario.
+4. `python -m app.cli sync-scenarios` after changing scenario files (also run at container start).
+5. Review `/admin` usage and audit log after launch.

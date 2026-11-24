@@ -15,6 +15,8 @@ dependencies = [
     "pyjwt[crypto]>=2.9,<3.0",
     "argon2-cffi>=23.1",
     "email-validator>=2.2,<3.0",
+    "pyyaml>=6.0",
+    "anthropic>=2.0,<3.0",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +33,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["app*"]
 
+[tool.setuptools.package-data]
+app = ["services/demo_resources/*.md"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
@@ -43,11 +48,13 @@ extend-exclude = [".venv", "alembic/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "S", "ASYNC"]
-ignore = ["B008"]  # FastAPI's Depends() in defaults is idiomatic
+# B008: FastAPI's Depends() in defaults is idiomatic.
+# E501: `ruff format` owns line length; long user-facing strings are left intact.
+ignore = ["B008", "E501"]
 
 [tool.ruff.lint.isort]
 # The local alembic/ migrations folder must not make the alembic library look first-party.
 known-third-party = ["alembic"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106"]
+"tests/**" = ["S101", "S105", "S106", "S311"]

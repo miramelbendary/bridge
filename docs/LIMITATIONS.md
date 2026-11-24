@@ -1,40 +1,39 @@
 # Limitations and open issues
 
-Honest record of what BRIDGE does **not** do yet, and what has not been verified.
+## Not verified on this build machine
+- **PostgreSQL**: tests ran on SQLite; PostgreSQL DDL was rendered offline; CI runs the suite on
+  PostgreSQL once the repository is pushed.
+- **Docker** (`docker-compose.yml`, both Dockerfiles): written, never built.
+- **Claude API**: the provider is implemented per the official SDK and tested with stubs. Real-model
+  role adherence, assessment quality, latency and cost have not been measured.
+- **`start.sh`** on macOS/Linux (the Windows `start.ps1` was verified from a clean copy).
+- **Supabase** sign-in: backend verification only; the frontend supports email/password (local).
 
-## Product scope (as of Phase 1)
-- No simulations, scenarios, AI characters, assessments, reports, competency tracking or
-  recommendations exist yet. The platform currently provides accounts, roles, specializations and
-  the technical foundation only.
-- Professors currently have the same permissions as students; their tools arrive in Phases 5 and 9.
-- No educational-effectiveness claims can be made. The targets in the project brief (completion
-  rate, satisfaction, grading error, latency) are development targets, not results. No pilot study
-  has been run.
+## The mock evaluator is a demonstration tool
+It scores by rubric *concept coverage* in the student's text and by rule-based signals. It can
+over-credit text that mentions concepts without applying them, and it cannot judge Arabic
+translation quality. Every mock assessment is labelled as such and can be corrected by a professor.
+Use the Claude provider plus professor review for anything beyond demonstrations.
 
-## Verification gaps
-- **PostgreSQL was not available on the Phase 1 development machine.** Tests and migrations were
-  run on SQLite locally; the PostgreSQL DDL was rendered offline. Execution on PostgreSQL happens in
-  CI, which has not yet run because the repository has not been pushed to GitHub.
-- **Docker was not available.** The Dockerfile and Compose file are written but have not been built
-  or started.
-- **No Supabase project credentials.** Backend verification of Supabase tokens is implemented and
-  tested with locally minted tokens. The frontend supports only local email/password sign-in;
-  Supabase sign-in on the frontend is planned for Phase 2.
-- Frontend behaviour was verified manually; no automated end-to-end tests yet (Phase 2).
+## Educational content
+- Six scenarios are drafts written for demonstration. Commercial, legal, linguistic and media facts
+  and all rubrics **require subject-specialist review** before authoritative use.
+- Sample teaching notes are placeholders to be replaced with approved course material.
+- No pilot has been run; no educational-effectiveness claim can be made (see EVALUATION.md).
 
-## Security limitations
-See `SECURITY.md` → "Known limitations": in-memory rate limiting, no token revocation/refresh,
-no email verification or password reset in local mode, registration reveals existing emails.
+## Product gaps
+- Retrieval is lexical (TF-IDF), not embedding-based (pgvector not used yet).
+- Timed events use a *simulated* clock advanced by actions, not wall-clock time.
+- Characters cannot be given new knowledge mid-scenario except through `reveal_when` rules.
+- No in-app notifications/email, no LMS integration, no account deletion/export endpoints.
+- Report PDF export is via the browser's print-to-PDF.
+- Frontend has no Content-Security-Policy header yet.
 
-## Before any real university pilot
-- Privacy impact assessment and approval (ethics/data protection) by the university.
-- Data retention and deletion controls (account deletion, export) — not implemented yet.
-- Use Supabase Auth (or the university's identity provider) instead of local accounts.
-- Independent security review.
-- Subject-specialist review of every scenario's professional facts and rubrics.
+## Before a real university pilot
+Privacy impact assessment and ethics approval; data retention and deletion controls; SSO or Supabase
+sign-in with email verification; independent security review; subject-specialist content review;
+measured AI-vs-human grading agreement on real student work.
 
-## Environment notes
-- Windows: very long repository paths exceed the 260-character limit and break loading compiled
-  Python/Node extensions. Keep the repository at a short path.
-- The lock files were produced on Windows with Python 3.14. Linux-only optional extras (e.g.
-  `uvloop` from `uvicorn[standard]`) are not pinned and are simply not installed.
+## Windows path length
+Very long folder paths break loading compiled Python/Node modules on Windows. Keep the project at
+a short path (e.g. `C:\bridge`).

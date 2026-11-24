@@ -7,10 +7,10 @@ environment. They are never stored in the database or returned by the API.
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 # Placeholder only; rejected in production by the validator below.
 INSECURE_DEV_SECRET = "dev-only-insecure-secret-change-me-0000000000"  # noqa: S105
@@ -40,7 +40,25 @@ class Settings(BaseSettings):
     supabase_jwt_audience: str = "authenticated"
 
     # HTTP
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # NoDecode: accept a plain comma-separated string from .env / environment variables
+    # (pydantic-settings would otherwise try to JSON-decode list fields and fail).
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
+
+    # AI. "mock" is deterministic and free (no key needed); "anthropic" calls the Claude API.
+    ai_provider: Literal["mock", "anthropic"] = "mock"
+    anthropic_api_key: str | None = None
+    ai_model: str = "claude-opus-5-5"
+    ai_timeout_seconds: float = Field(default=45, ge=5, le=300)
+    # Defaults for limits; administrators can override them at runtime (platform settings).
+    ai_max_messages_per_session: int = Field(default=60, ge=1)
+    ai_daily_requests_per_user: int = Field(default=300, ge=1)
+    ai_session_budget_usd: float = Field(default=1.0, gt=0)
+
+    # Educational resource uploads
+    max_upload_bytes: int = Field(default=2_000_000, ge=10_000)
+
+    # Demo data (`python -m app.cli seed-demo`) is refused in production.
+    allow_demo_seed: bool = True
 
     # Rate limiting for authentication endpoints (per client IP, per endpoint).
     auth_rate_limit_attempts: int = Field(default=10, ge=1)
@@ -66,6 +84,8 @@ class Settings(BaseSettings):
             )
         if self.environment == "production" and self.database_url.startswith("sqlite"):
             raise ValueError("SQLite is not supported in production; use PostgreSQL")
+        if self.ai_provider == "anthropic" and not self.anthropic_api_key:
+            raise ValueError("AI_PROVIDER=anthropic requires ANTHROPIC_API_KEY")
         if "*" in self.cors_origins:
             raise ValueError("Wildcard CORS origins are not allowed (credentials are used)")
         return self

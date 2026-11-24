@@ -1,53 +1,56 @@
 # API
 
-Base URL: `http://localhost:8000`. Versioned routes live under `/api/v1`. Interactive OpenAPI docs
-at `/docs` in development (disabled in production). Authenticated routes need
-`Authorization: Bearer <access token>`.
+Base path `/api/v1`. Interactive OpenAPI docs at `http://localhost:8000/docs` (development only).
+Authenticated routes need `Authorization: Bearer <token>`. Errors: `{"detail": ...}`; engine errors
+return `{"detail": {"code": "...", "message": "..."}}` (409 for unavailable/finished, 422 otherwise).
+State-changing session routes accept an `Idempotency-Key` header.
 
-Errors use FastAPI's shape: `{"detail": "..."}` (or a list of validation errors for 422).
-Unknown request fields are rejected with 422.
+## Auth & users
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/auth/config` | Provider in use |
+| POST | `/auth/register` · `/auth/login` | Local provider; rate limited; registration can be closed by admins |
+| GET | `/users/me` · PATCH `/users/me/profile` | Profile and specialization |
+| GET | `/specializations` | Active specializations |
+
+## Simulation (any signed-in user)
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/scenarios?specialization=` | Published (authors also see drafts) |
+| GET | `/scenarios/{slug}` | Introduction details |
+| POST | `/sessions` | `{scenario_slug, mode, difficulty, assignment_id?}`; an assignment fixes mode/difficulty |
+| GET | `/sessions` | My attempts |
+| GET | `/sessions/{id}` | Workplace view (owner; authorized professors/admins read-only) |
+| POST | `/sessions/{id}/actions` | `{action_id, justification}` |
+| POST | `/sessions/{id}/messages` | `{character_id, text}` → AI reply; may perform a validated action |
+| POST | `/sessions/{id}/submissions` | `{submission_id, text}` (revisions allowed) |
+| POST | `/sessions/{id}/hint` | Training mode only |
+| POST | `/sessions/{id}/finish` | Completes and assesses (idempotent) |
+| POST | `/sessions/{id}/abandon` | |
+| GET | `/sessions/{id}/timeline` · `/sessions/{id}/assessment` | Event log · assessment + report + reviews |
+
+## Progress
+`GET /me/competencies`, `GET /me/recommendations`, `GET /me/assignments`, `GET /me/resources/search?q=`
+
+## Teaching (professors, admins)
+| Method | Path |
+|---|---|
+| GET/POST | `/teach/courses` |
+| GET | `/teach/courses/{id}` · `/teach/courses/{id}/progress` · `/teach/courses/{id}/export.csv` |
+| POST/DELETE | `/teach/courses/{id}/members[/{student_id}]` · `/teach/courses/{id}/assignments[/{id}]` |
+| GET | `/teach/students/{id}/sessions` · `/teach/review-queue` · `/teach/assessments/{id}` |
+| POST | `/teach/assessments/{id}/reviews` `{criterion_id?, new_score?, justification}` |
+| GET | `/teach/scenarios/{slug}/definition` |
+| POST | `/teach/scenarios/validate` · `/teach/scenarios` (new version) |
+| PUT | `/teach/scenarios/{slug}/rubric` |
+| GET/POST/DELETE | `/teach/resources[/{id}]` (`{title, filename, content, visibility, specialization_code}`) |
+
+## Administration
+| Method | Path |
+|---|---|
+| GET | `/admin/users` · `/admin/audit-logs` · `/admin/usage?days=` · `/admin/scenarios` · `/admin/specializations` |
+| PATCH | `/admin/users/{id}/role` · `/admin/users/{id}/active` · `/admin/settings` · `/admin/specializations/{id}` |
+| POST | `/admin/specializations` · `/admin/scenarios/{slug}/status` |
 
 ## Health
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/health` | — | Liveness. `{"status":"ok","version":"0.1.0"}` |
-| GET | `/health/ready` | — | Readiness incl. database. 200 or 503 |
-
-## Auth
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/api/v1/auth/config` | — | `{"provider":"local"\|"supabase","supabase_url":...}` |
-| POST | `/api/v1/auth/register` | — (rate limited) | Local only. Body `{email, password (10–128), display_name}`. 201 → token response. Always creates a **student**. 409 if the email exists |
-| POST | `/api/v1/auth/login` | — (rate limited) | Local only. Body `{email, password}`. 200 → token response; 401 with identical message for wrong password or unknown email |
-
-Token response: `{"access_token", "token_type": "bearer", "expires_in": <seconds>, "user": User}`.
-With `AUTH_PROVIDER=supabase`, register/login return 404: users sign in with Supabase and send the
-Supabase access token; BRIDGE provisions a student account on first use.
-
-Rate limit exceeded → 429 with `Retry-After`.
-
-## Users
-| Method | Path | Permission | Description |
-|---|---|---|---|
-| GET | `/api/v1/users/me` | `profile:read_own` | Current user, profile and effective permissions |
-| PATCH | `/api/v1/users/me/profile` | `profile:update_own` | Body `{display_name?, specialization_code?}`. 422 for unknown specialization |
-
-## Specializations
-| Method | Path | Permission | Description |
-|---|---|---|---|
-| GET | `/api/v1/specializations` | `specializations:read` | Active specializations, by name |
-
-## Admin
-| Method | Path | Permission | Description |
-|---|---|---|---|
-| GET | `/api/v1/admin/users?limit&offset` | `users:read_all` | Paginated users (limit ≤ 200) |
-| PATCH | `/api/v1/admin/users/{id}/role` | `users:manage_roles` | Body `{role}`. 409 when demoting yourself or the last admin. Audited |
-| GET | `/api/v1/admin/audit-logs?action&limit` | `audit:read` | Most recent first (limit ≤ 500) |
-
-## Permission matrix (Phase 1)
-| Permission | student | professor | admin |
-|---|:-:|:-:|:-:|
-| `profile:read_own`, `profile:update_own`, `specializations:read` | ✔ | ✔ | ✔ |
-| `users:read_all`, `users:manage_roles`, `audit:read` | | | ✔ |
-
-Denied requests return 403 and are recorded in `audit_logs` with outcome `denied`.
+`GET /health`, `GET /health/ready` (database check).

@@ -19,21 +19,50 @@ class Permission(enum.StrEnum):
     USERS_READ_ALL = "users:read_all"
     USERS_MANAGE_ROLES = "users:manage_roles"
     AUDIT_READ = "audit:read"
+    SCENARIOS_PLAY = "scenarios:play"
+    SCENARIOS_AUTHOR = "scenarios:author"
+    SCENARIOS_PUBLISH = "scenarios:publish"
+    COURSES_MANAGE = "courses:manage"
+    ASSESSMENTS_REVIEW = "assessments:review"
+    RESOURCES_MANAGE = "resources:manage"
+    RESOURCES_READ = "resources:read"
+    PLATFORM_MANAGE = "platform:manage"
+    USAGE_READ = "usage:read"
+    SPECIALIZATIONS_MANAGE = "specializations:manage"
 
 
 _COMMON = {
     Permission.PROFILE_READ_OWN,
     Permission.PROFILE_UPDATE_OWN,
     Permission.SPECIALIZATIONS_READ,
+    Permission.SCENARIOS_PLAY,
+    Permission.RESOURCES_READ,
+}
+
+_TEACHING = {
+    Permission.SCENARIOS_AUTHOR,
+    Permission.COURSES_MANAGE,
+    Permission.ASSESSMENTS_REVIEW,
+    Permission.RESOURCES_MANAGE,
 }
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
     Role.STUDENT: frozenset(_COMMON),
-    # Professor permissions (scenario editing, rubric editing, reviewing authorized students)
-    # arrive with the features in Phases 5 and 9. Professors must NOT get users:read_all.
-    Role.PROFESSOR: frozenset(_COMMON),
+    # Professors review only students in their own courses (enforced in services/access.py).
+    # They must NOT get users:read_all.
+    Role.PROFESSOR: frozenset(_COMMON | _TEACHING),
     Role.ADMIN: frozenset(
-        _COMMON | {Permission.USERS_READ_ALL, Permission.USERS_MANAGE_ROLES, Permission.AUDIT_READ}
+        _COMMON
+        | _TEACHING
+        | {
+            Permission.USERS_READ_ALL,
+            Permission.USERS_MANAGE_ROLES,
+            Permission.AUDIT_READ,
+            Permission.SCENARIOS_PUBLISH,
+            Permission.PLATFORM_MANAGE,
+            Permission.USAGE_READ,
+            Permission.SPECIALIZATIONS_MANAGE,
+        }
     ),
 }
 

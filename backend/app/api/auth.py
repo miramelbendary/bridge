@@ -52,6 +52,10 @@ def register(
     db: Session = Depends(get_db),
     settings: Settings = Depends(_require_local),
 ) -> TokenResponse:
+    from app.services import platform
+
+    if not platform.get(db, settings, "registration_open"):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Registration is currently closed")
     try:
         user = register_local_user(
             db, email=body.email, password=body.password, display_name=body.display_name

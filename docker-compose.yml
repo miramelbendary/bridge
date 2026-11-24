@@ -1,9 +1,7 @@
-# Local development stack: PostgreSQL (with pgvector available for Phase 8) + backend API.
-# Usage (from the repository root):
-#   cp .env.example .env    # then edit secrets
-#   docker compose -f infrastructure/docker-compose.yml --env-file .env up --build
-# The frontend runs separately with `npm run dev` in frontend/.
-
+# Full BRIDGE stack: PostgreSQL 17 (pgvector image) + API + web app.
+#   1. cp .env.example .env      (set POSTGRES_PASSWORD and LOCAL_JWT_SECRET)
+#   2. docker compose up --build
+#   3. open http://localhost:3000  (demo logins are created automatically in development)
 name: bridge
 
 services:
@@ -13,8 +11,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-bridge}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-bridge}
-    ports:
-      - "127.0.0.1:5432:5432"   # bound to localhost only
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -25,18 +21,32 @@ services:
 
   backend:
     build:
-      context: ../backend
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
-      ENVIRONMENT: development
+      ENVIRONMENT: ${ENVIRONMENT:-development}
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-bridge}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-bridge}
       AUTH_PROVIDER: local
       LOCAL_JWT_SECRET: ${LOCAL_JWT_SECRET:?set LOCAL_JWT_SECRET in .env}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      CORS_ORIGINS: http://localhost:3000
+      AI_PROVIDER: ${AI_PROVIDER:-mock}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
       db:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      BRIDGE_API_URL: http://backend:8000
+      BRIDGE_DEMO_MODE: ${BRIDGE_DEMO_MODE:-1}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   pgdata:

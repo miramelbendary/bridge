@@ -1,42 +1,50 @@
 # AI design
 
-> **Status:** design principles only. No AI code exists yet; integration is Phase 4, assessment
-> Phase 5, retrieval Phase 8. This document will be extended as those phases are implemented.
+## Principle
+Deterministic code owns scenario facts, rules, resources, permissions, events, completion and final
+scores. AI produces **natural language and proposals** that are validated before use.
 
-## Principle: hybrid, with deterministic authority
-| Deterministic backend code controls | AI may assist with |
+## Providers
+| Provider | When | Behaviour |
+|---|---|---|
+| `mock` (default) | No key needed | Characters reply from authored FAQ lines and fallback lines; intents recognised by scenario `intent_keywords`; assessment = rubric concept coverage + evidence selection. Deterministic. Labelled "offline" in the UI and `is_mock` in data. |
+| `anthropic` | `AI_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`, selected by an admin | Claude via `client.messages.parse(..., output_format=<Pydantic model>)`; default model `claude-opus-5-5` (configurable `AI_MODEL`); effort `low` for character turns, `medium` for assessment; 2 SDK retries; timeout `AI_TIMEOUT_SECONDS`. |
+
+## Characters
+- Each character has its own persona, objectives, **knowledge** (facts it may state) and
+  **restricted** facts with `reveal_when` conditions. Locked facts are never in the prompt.
+- Conversation context is per character (last 10 turns), never shared between characters.
+- Output schema: `reply`, `mood`, `student_intent_action_id`, `intent_confidence`.
+- Backend checks: intent must be one of the currently available actions linked to that character and
+  confidence ≥ 0.6; the engine re-validates availability; replies sharing a 5-word sequence with a
+  locked fact are replaced by a scripted line (`blocked_restricted_fact`).
+- When an accepted intent has an authored `character_response`, that authored text is shown (so
+  authoritative facts come from the scenario, not the model).
+- Assessment mode prompt forbids solving tasks or recommending options.
+
+## Assessment
+See ARCHITECTURE.md → Assessment pipeline. The assessor sees the rubric, evidence items (as data
+inside `<evidence>`), and approved *student-visible* course passages. Students' text is never treated
+as instructions; injection-like text sets a flag and routes the assessment to professor review.
+
+## Reliability and cost controls
+| Control | Default (env) — admin-editable |
 |---|---|
-| Scenario rules, facts, state transitions, event triggers | Natural conversation in character |
-| Resources (budget, time, trust…) and their calculations | Interpreting a free-text action into a *proposed* structured action |
-| Permissions, completion conditions | Qualitative feedback against an approved rubric |
-| Final and weighted score calculation | Explanations and recommendations |
+| AI messages per session | 60 (`AI_MAX_MESSAGES_PER_SESSION`) |
+| AI requests per user per day | 300 (`AI_DAILY_REQUESTS_PER_USER`) |
+| Cost budget per session | USD 1.00 (`AI_SESSION_BUDGET_USD`) |
+| Timeout | 45 s (`AI_TIMEOUT_SECONDS`) |
 
-The AI produces **proposals**; the backend validates and decides. The model never receives
-database access, tool execution, or the ability to write authoritative state.
+When a limit is reached, the session continues with labelled scripted replies. Any provider error,
+refusal, truncated or malformed output → labelled fallback (characters) or the mock evaluator
+(assessment, flagged). Every call is logged (`ai_usage_logs`) with tokens, latency, estimated cost
+(from list prices in `anthropic_provider.PRICES`) and error codes — never prompts or student text.
 
-## Planned components (Phase 4)
-- `app/ai/providers/`: a provider interface (`generate_structured(prompt, schema, limits)`) with
-  implementations for an external API (Anthropic, OpenAI or Gemini; configured server-side) and a
-  **deterministic mock provider** for tests and demos without credentials. Mock and fallback
-  output will be visibly labelled.
-- Character contexts: each character gets only its own persona, knowledge and permitted facts.
-  No shared conversation across characters; restricted information is never placed in its prompt.
-- Structured output validated with Pydantic; malformed or out-of-policy output is rejected and a
-  scripted fallback is used.
-- Timeouts, bounded retries, per-user and per-session budgets, token/latency/cost logging
-  (`ai_usage_logs` table, added in Phase 4).
+## Privacy towards the provider
+Prompts contain scenario content and the student's simulation text only: no names, emails or user
+ids.
 
-## Prompt-injection stance
-Student messages, submissions and uploaded documents are **untrusted data**. They are delimited as
-data in prompts, never concatenated into instructions, and never able to change scores, state or
-permissions, because those are not under the model's control in the first place.
-
-## Assessment (Phase 5)
-A separate assessment service, independent of the characters, scores each rubric criterion with an
-explanation, evidence references that must point to real recorded actions/submissions (validated by
-the backend), weaknesses, improvements and uncertainty. "Insufficient evidence" is distinct from a
-low score. Weighted totals are computed by backend code. Professors can override with justification;
-the original AI assessment is retained.
-
-## Privacy towards providers
-Only the minimum context is sent: no names, emails or student identifiers; pseudonymous session ids.
+## Fictional vs verified content
+All scenario organisations, people and figures are fictional (`fictional_notice`). Each scenario
+carries a `review_status` stating that professional facts and rubrics need subject-specialist
+review. Sample teaching notes are labelled as samples.

@@ -1,60 +1,48 @@
 # Roadmap
 
-Phases run in order. A phase is only marked complete when its acceptance criteria are verified.
-The next phase does not start until the current one has been reviewed.
+Status legend: **Done** = implemented and verified by automated tests and/or a recorded manual run.
+"Not verified" items are listed explicitly — see `docs/LIMITATIONS.md`.
 
-| # | Phase | Status |
-|---|---|---|
-| 1 | Project foundations | **Complete, awaiting review** (PostgreSQL path verified in CI only, see below) |
-| 2 | Application interface | Not started |
-| 3 | Core simulation engine | Not started |
-| 4 | AI integration | Not started |
-| 5 | Assessment engine | Not started |
-| 6 | International Trade MVP | Not started |
-| 7 | Translation and INFOCOM | Not started |
-| 8 | Adaptive learning (+ RAG) | Not started |
-| 9 | Professor and administrator dashboards | Not started |
-| 10 | Testing, security and optimization | Not started |
-| 11 | Deployment and final delivery | Not started |
+| # | Phase | Status | Verification |
+|---|---|---|---|
+| 1 | Project foundations | Done | 42 tests at the time; live API + browser check |
+| 2 | Application interface | Done | Next.js build (20 routes), Playwright journeys, axe scan |
+| 3 | Core simulation engine | Done | Engine unit tests + random branch exploration of all 6 scenarios |
+| 4 | AI integration | Done (mock verified; Claude provider tested with stubs only) | AI tests incl. invalid intents, leaks, failures, limits |
+| 5 | Assessment engine | Done | Evidence validation, weighting, injection, review tests |
+| 6 | International Trade MVP | Done | Full journey in browser and Playwright |
+| 7 | Translation and INFOCOM | Done | RTL test, branch exploration, schema validation |
+| 8 | Adaptive learning (+ retrieval) | Done (lexical retrieval, not pgvector) | Competency/recommendation/resource tests |
+| 9 | Professor and admin dashboards | Done | API tests + Playwright review/admin journeys + manual browser run |
+| 10 | Testing, security and optimization | Done for the defined suite | 121 backend + 6 e2e tests; see TESTING.md |
+| 11 | Deployment and final delivery | Partly | One-command local start verified from a clean copy; Docker and cloud hosting written but not run |
 
-## Phase 1 — Project foundations
+## Definition of done for a university demonstration
 
-**Objective:** a running, tested skeleton that every later phase builds on: frontend and backend
-structure, PostgreSQL schema under migrations, authentication, role-based authorization, CI, docs.
-
-### Plan and outcome
-
-| Task | Outcome |
+| Requirement | Status |
 |---|---|
-| Inspect repository | Empty workspace: built from scratch |
-| Requirements and boundaries | `docs/REQUIREMENTS.md` |
-| Backend structure (FastAPI modular monolith) | Done |
-| PostgreSQL configuration | Done: Docker Compose (`pgvector/pgvector:pg17`) and CI service |
-| Initial migrations | `0001_foundations`: users, user_profiles, specializations, audit_logs, seed data |
-| Authentication | Local JWT provider (working end to end) + Supabase token verification (tested with synthetic tokens) |
-| Authorization | Code-defined role → permission map, enforced by backend dependencies |
-| Environment variables | `.env.example` files, validated settings, unsafe production configs rejected |
-| Automated testing and CI | 42 pytest tests; GitHub Actions: backend on PostgreSQL + SQLite, frontend lint/typecheck/build |
-| Frontend structure | Next.js 16: landing, sign in, register, dashboard (live API data), httpOnly session cookie |
-| Documentation | README, ROADMAP, CHANGELOG, CLAUDE.md, docs/* |
+| Authentication and authorization work | ✔ |
+| All three specializations available | ✔ (2 scenarios each) |
+| At least one complete scenario per specialization | ✔ |
+| Students complete meaningful professional tasks | ✔ |
+| AI characters respect scenario constraints | ✔ enforced structurally; real-model behaviour not yet evaluated with a key |
+| Decisions produce valid consequences | ✔ deterministic engine |
+| Reports contain verifiable evidence | ✔ evidence refs validated against the event log |
+| Student progress saved | ✔ |
+| Recommendations explainable | ✔ reasons shown |
+| Professors can review assessments | ✔ with audit trail |
+| Critical workflows have automated tests | ✔ |
+| Security limitations documented | ✔ SECURITY.md, LIMITATIONS.md |
+| Reproducible run instructions | ✔ start scripts verified from a clean copy |
 
-### Acceptance criteria
+## Before a real pilot (not started)
 
-| Criterion | Status |
-|---|---|
-| Frontend starts | Verified locally (`next build` + `next start`) |
-| Backend starts | Verified locally (uvicorn) |
-| Database connects | Verified locally on SQLite; PostgreSQL connection **verified only once CI runs** |
-| Migrations execute | Verified on SQLite (tests + CLI); PostgreSQL DDL rendered offline; executed on PostgreSQL in CI |
-| Authentication works | Verified: tests + live register/login/dashboard in a browser |
-| Initial automated tests pass | 42/42 locally on SQLite |
+1. Subject-specialist review of all six scenarios and rubrics.
+2. Evaluate the Claude provider with real keys: character role adherence, assessment agreement with
+   human graders (see EVALUATION.md), latency and cost.
+3. Run the backend test suite on PostgreSQL in CI (configured) and test the Docker stack.
+4. Supabase (or university SSO) sign-in on the frontend; email verification and password reset.
+5. Data retention/deletion controls and a privacy review; ethics approval for the pilot study.
 
-**Blockers recorded:** no Docker or PostgreSQL on the development machine used for Phase 1, and no
-Supabase project credentials. Independent work continued; see `docs/LIMITATIONS.md`.
-
-## Phase 2 — Application interface (next)
-
-Design system (tokens, shadcn/ui components, dark mode), navigation shell, polished auth pages,
-student dashboard, specialization selection (the API already supports it), scenario library and the
-virtual workplace layout (inbox, messages, documents, tasks), with loading/empty/error states.
-Also: Supabase login on the frontend (if a project is available) and Playwright end-to-end tests.
+## Possible later work
+Embedding-based retrieval with pgvector; more scenarios; voice; multiplayer; LMS integration.

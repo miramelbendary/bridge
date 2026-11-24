@@ -1,0 +1,265 @@
+# INFOCOM — Scenario 2: Misinformation and Public Response
+# All organisations, people and posts are fictional. Audience reactions are SIMULATED.
+slug: misinformation-response
+specialization: infocom
+title: Misinformation and Public Response
+summary: >
+  A false claim says a community foundation misused donations. Investigate the claim, choose a
+  communication strategy and correct the record without amplifying the falsehood.
+estimated_minutes: 25
+review_status: "Draft: requires review by an INFOCOM lecturer."
+learning_objectives:
+  - Investigate a claim using primary sources.
+  - Choose channels and timing that reach the audience exposed to the claim.
+  - Correct misinformation without amplifying it (e.g. the "truth sandwich").
+
+context:
+  organization: Green Delta Foundation (fictional), Mansoura — community water projects
+  student_role: Communications Officer
+  briefing: >
+    A post claims that "Green Delta spent flood-relief donations on luxury cars". It is being
+    shared in local Facebook groups. Your director wants a response today.
+  fictional_notice: "All organisations, people and posts are fictional. Audience reactions are simulated outcomes, not real public opinion."
+
+difficulties:
+  beginner:
+    time_limit_minutes: 360
+  intermediate:
+    time_limit_minutes: 300
+  advanced:
+    time_limit_minutes: 240
+  professional:
+    time_limit_minutes: 200
+    hints_available: false
+
+variables:
+  false_claim_reach:
+    label: Reach of the false claim (simulated)
+    initial: 40
+    min: 0
+    max: 100
+    unit: "%"
+  donor_trust:
+    label: Donor trust (simulated)
+    initial: 60
+    min: 0
+    max: 100
+    unit: "%"
+  claim_checked:
+    label: Claim checked
+    initial: 0
+    min: 0
+    max: 1
+    visible: false
+
+characters:
+  - id: dina
+    name: Dina Farag
+    role: Executive Director
+    kind: manager
+    organization: Green Delta Foundation
+    personality: Upset by the accusation, wants to fight back strongly.
+    communication_style: Emotional at first, listens to reasoned advice.
+    objectives:
+      - Protect donors' trust.
+    knowledge:
+      - Audited accounts for last year are public on the website.
+    restricted:
+      - fact: The "luxury car" in the photo is a used pickup truck donated by a local business for transporting water pumps.
+        reveal_when: { action_taken: check_records }
+    initial_mood: angry
+    faq:
+      - keywords: [lawsuit, sue, legal]
+        reply: "I want to sue them! ...Fine — what would you do instead?"
+    fallback_replies:
+      - "This is outrageous. What do we do?"
+  - id: omar_fin
+    name: Omar Rashed
+    role: Finance Officer
+    kind: colleague
+    organization: Green Delta Foundation
+    personality: Calm and precise.
+    communication_style: Facts and documents.
+    objectives:
+      - Make sure numbers are quoted correctly.
+    knowledge:
+      - 94% of flood-relief donations went directly to pumps and pipes; 6% to logistics.
+      - The audit report was signed by an independent auditor.
+    initial_mood: calm
+    fallback_replies:
+      - "I can send you any record you need."
+
+documents:
+  - id: false_post
+    title: The circulating post (simulated)
+    kind: social_media
+    body: |
+      "Green Delta took our flood donations and bought LUXURY CARS 🚗💰 Photo proof! Share!!" (simulated)
+      [Photo: a white vehicle with the foundation's logo sticker.]
+  - id: audit_summary
+    title: Audit summary (last year)
+    kind: report
+    initially_visible: false
+    body: |
+      Independent audit — no material misstatements.
+      Flood-relief fund: 94% programme costs (pumps, pipes, installation), 6% logistics.
+      Vehicles: one used pickup truck received as an in-kind donation (logged, valued EGP 210,000).
+
+tasks:
+  - id: investigate
+    title: Investigate the claim
+    description: Check the facts with primary sources.
+    hints:
+      - "Ask Finance for the records and the director about the vehicle."
+  - id: strategy
+    title: Choose a response strategy
+    description: Decide how and where to respond.
+    hints:
+      - "Respond where the claim circulates, lead with the facts, and avoid repeating the false claim in headlines."
+  - id: statement
+    title: Publish a correction
+    description: Write and publish a short correction.
+
+actions:
+  - id: check_records
+    label: Check financial records and the vehicle's origin
+    description: Ask Finance and the director for documents.
+    category: investigation
+    duration_minutes: 20
+    via_character: omar_fin
+    intent_keywords: [records, audit, accounts, receipt, vehicle, car, truck, documents]
+    completes_tasks: [investigate]
+    reveals_documents: [audit_summary]
+    effects: [ { var: claim_checked, op: set, value: 1 } ]
+    consequence: The audit shows 94% programme spending; the "luxury car" is a donated used pickup truck.
+    character_response: "Here's the audit summary — 94% went to pumps and pipes. And the vehicle is the used pickup the Ahmed Brothers workshop donated last spring."
+  - id: respond_in_groups
+    label: "Strategy: respond in the local groups with facts"
+    description: Post a short factual correction in the groups where the claim spreads.
+    category: decision
+    requires_justification: true
+    exclusive_group: strategy
+    available_when: { action_taken: check_records }
+    completes_tasks: [strategy]
+    effects:
+      - { var: false_claim_reach, value: -20 }
+      - { var: donor_trust, value: 10 }
+    consequence: Group members see the documents; several share the correction (simulated).
+  - id: press_conference
+    label: "Strategy: call a press conference about the 'luxury car scandal'"
+    description: Hold a big press event addressing the accusation.
+    category: decision
+    requires_justification: true
+    exclusive_group: strategy
+    completes_tasks: [strategy]
+    effects:
+      - { var: false_claim_reach, value: 20 }
+      - { var: donor_trust, value: -5 }
+    consequence: Coverage repeats the phrase "luxury car scandal", spreading the claim to new audiences (simulated).
+  - id: ignore_claim
+    label: "Strategy: ignore the claim"
+    description: Do not respond publicly.
+    category: decision
+    requires_justification: true
+    exclusive_group: strategy
+    completes_tasks: [strategy]
+    effects:
+      - { var: false_claim_reach, value: 15 }
+      - { var: donor_trust, value: -10 }
+    consequence: The claim keeps circulating unchallenged (simulated).
+  - id: publish_correction
+    label: Publish your correction
+    description: Publish the written correction on the foundation's channels.
+    category: decision
+    available_when: { submitted: correction }
+    completes_tasks: [statement]
+    effects:
+      - { var: false_claim_reach, value: -15 }
+      - { var: donor_trust, value: 10 }
+    consequence: The correction is published with links to the audit (simulated reactions improve).
+
+events:
+  - id: spread
+    title: Claim spreads
+    at_minute: 60
+    when: { not: { action_taken: respond_in_groups } }
+    effects: [ { var: false_claim_reach, value: 15 } ]
+    notification: "The post reaches two more large local groups (simulated)."
+
+submissions:
+  - id: correction
+    title: Public correction
+    min_words: 60
+    prompt: >
+      Write a short correction (80–150 words) using a "truth sandwich" — lead with the facts,
+      address the false claim briefly, end with the facts and a link to evidence.
+
+outcomes:
+  - id: corrected
+    title: Record corrected without amplification
+    description: The claim was checked and corrected where it spread, and donor trust rose.
+    when: { all: [ { var: claim_checked, op: "==", value: 1 }, { action_taken: publish_correction }, { var: false_claim_reach, op: "<=", value: 30 } ] }
+  - id: partly
+    title: Partly corrected
+    description: A correction was made, but the claim still reaches many people.
+    when: { action_taken: publish_correction }
+  - id: uncorrected
+    title: Claim left uncorrected
+    description: No correction was published.
+
+alternative_approaches:
+  - Verify with documents, then post a short truth-sandwich correction in the groups where the claim circulates, linking to the audit.
+  - Ask the donor business that gave the vehicle to confirm publicly — a trusted third-party voice.
+
+rubric:
+  title: Misinformation response rubric
+  criteria:
+    - id: verification
+      name: Information verification
+      competency: information_verification
+      weight: 30
+      description: Checks the claim against primary sources before responding.
+      evidence_sources: [actions, "submission:correction"]
+      objective_weight: 0.6
+      objective_base: 15
+      objective_signals:
+        - { when: { action_taken: check_records }, points: 75, description: "Checked the records." }
+      expected_concepts: [audit, "94", pickup, donated, records]
+      concepts_to_revise: [Information verification]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "No verification." }
+        - { score: 50, label: Developing, descriptor: "Partial." }
+        - { score: 75, label: Proficient, descriptor: "Verified with documents." }
+        - { score: 95, label: Excellent, descriptor: "Verified and evidence made public." }
+    - id: media_literacy
+      name: Media literacy and non-amplification
+      competency: media_literacy
+      weight: 35
+      description: Chooses channels and wording that correct without amplifying.
+      evidence_sources: [actions, "submission:correction"]
+      objective_weight: 0.5
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: respond_in_groups }, points: 50, description: "Responded where the claim circulates." }
+        - { when: { action_taken: press_conference }, points: -25, description: "Amplified the claim." }
+        - { when: { action_taken: ignore_claim }, points: -15, description: "Left the claim unchallenged." }
+      expected_concepts: [facts, audit, link, "94", water, pumps]
+      concepts_to_revise: [Misinformation and not amplifying false claims]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Amplifies the claim." }
+        - { score: 50, label: Developing, descriptor: "Correction repeats the claim prominently." }
+        - { score: 75, label: Proficient, descriptor: "Fact-led correction in the right channel." }
+        - { score: 95, label: Excellent, descriptor: "Truth sandwich, right channel, evidence linked." }
+    - id: public_communication
+      name: Public communication
+      competency: public_communication
+      weight: 35
+      description: The correction is clear, calm and credible.
+      evidence_sources: ["submission:correction"]
+      expected_concepts: [donations, audit, pumps, truck, donated, transparen]
+      concepts_to_revise: [Holding statements and public statements]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Unclear or hostile." }
+        - { score: 50, label: Developing, descriptor: "Clear but defensive." }
+        - { score: 75, label: Proficient, descriptor: "Clear, calm, factual." }
+        - { score: 95, label: Excellent, descriptor: "Clear, warm, evidence-based and shareable." }

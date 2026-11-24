@@ -9,6 +9,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Resource uploads (max 2 MB on the API) pass through a Server Action.
+  experimental: { serverActions: { bodySizeLimit: "3mb" } },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

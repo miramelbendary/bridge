@@ -1,0 +1,270 @@
+# Translation — Scenario 2: Conflicting Translation Requirements
+# All organisations, people and products are fictional.
+slug: conflicting-requirements
+specialization: translation
+title: Conflicting Translation Requirements
+summary: >
+  Two stakeholders at the same client want different things: Legal wants a precise, formal
+  Arabic safety leaflet; Marketing wants it friendly and colloquial. Clarify, negotiate a solution
+  and produce a justified translation.
+estimated_minutes: 25
+review_status: "Draft: requires review by a translation lecturer."
+learning_objectives:
+  - Identify conflicting requirements and their underlying purposes.
+  - Negotiate a solution that satisfies the non-negotiable constraints.
+  - Translate safety information accurately while adapting tone where allowed.
+
+context:
+  organization: Lisan Language Services (fictional), Cairo
+  student_role: Translator (English → Arabic)
+  briefing: >
+    HomeSpark (fictional) is launching an electric kettle in Egypt and needs its short safety
+    leaflet in Arabic. Their legal counsel and their marketing lead have sent contradictory
+    instructions. You must deliver one Arabic version.
+
+difficulties:
+  beginner:
+    time_limit_minutes: 360
+  intermediate:
+    time_limit_minutes: 300
+  advanced:
+    time_limit_minutes: 240
+  professional:
+    time_limit_minutes: 200
+    hints_available: false
+
+variables:
+  stakeholder_alignment:
+    label: Stakeholder alignment
+    initial: 30
+    min: 0
+    max: 100
+    unit: "%"
+  safety_risk:
+    label: Safety-information risk
+    initial: 50
+    min: 0
+    max: 100
+    unit: "%"
+
+characters:
+  - id: amr
+    name: Amr Lotfy
+    role: Legal Counsel
+    kind: stakeholder
+    organization: HomeSpark Egypt (fictional)
+    personality: Cautious, precise.
+    communication_style: Formal, numbered points.
+    objectives:
+      - Safety warnings must be complete, unambiguous and legally defensible.
+    knowledge:
+      - Egyptian consumer-protection rules expect clear Arabic safety warnings.
+      - The warnings section must not be shortened or softened.
+    restricted:
+      - fact: He has no objection to a friendlier tone in the introduction, as long as warnings stay formal and complete.
+        reveal_when: { action_taken: propose_split_register }
+    initial_mood: concerned
+    fallback_replies:
+      - "Please make sure every warning is translated in full."
+  - id: mai
+    name: Mai Ezzat
+    role: Marketing Lead
+    kind: stakeholder
+    organization: HomeSpark Egypt (fictional)
+    personality: Creative, brand-focused.
+    communication_style: Casual, emoji-friendly.
+    objectives:
+      - The leaflet should sound warm and on-brand.
+    knowledge:
+      - Brand voice is friendly Egyptian Arabic.
+    restricted:
+      - fact: She accepts formal wording for warnings if the introduction and tips sound friendly.
+        reveal_when: { action_taken: propose_split_register }
+    initial_mood: neutral
+    fallback_replies:
+      - "Can it sound a bit more fun? 😊"
+
+documents:
+  - id: leaflet_source
+    title: Source leaflet (EN)
+    kind: source
+    body: |
+      **Welcome to your new HomeSpark kettle!** Fresh tea is just minutes away.
+
+      **Safety warnings**
+      1. Do not immerse the kettle, base or cable in water.
+      2. Do not fill above the MAX mark — boiling water may be ejected.
+      3. Keep out of reach of children under 8.
+      4. Unplug before cleaning.
+
+      **Tips**: Descale every month for the best taste.
+  - id: legal_email
+    title: Instruction from Legal
+    kind: email
+    body: "Please translate the entire leaflet in formal Modern Standard Arabic. No colloquial wording anywhere. — Amr"
+  - id: marketing_email
+    title: Instruction from Marketing
+    kind: email
+    body: "Please make it sound like us — friendly Egyptian Arabic, short and fun. Nobody reads stiff leaflets! — Mai"
+
+tasks:
+  - id: identify_conflict
+    title: Identify the conflict
+    description: Analyse what each stakeholder needs and why.
+    hints:
+      - "Ask what each requirement protects: legal safety vs brand voice. Are they really incompatible everywhere?"
+  - id: clarify
+    title: Clarify with stakeholders
+    description: Contact the stakeholders to resolve the conflict.
+  - id: translate
+    title: Deliver the translation
+    description: Submit the Arabic leaflet and a short justification.
+
+actions:
+  - id: analyse_requirements
+    label: Analyse both requirements
+    description: Compare the two instructions with the source leaflet.
+    category: investigation
+    duration_minutes: 15
+    completes_tasks: [identify_conflict]
+    effects: [ { var: safety_risk, value: -10 } ]
+    consequence: You see that the conflict mainly concerns tone; the safety warnings are non-negotiable content.
+  - id: propose_split_register
+    label: Propose formal warnings with a friendly introduction
+    description: Suggest formal MSA for warnings and a friendly tone for the welcome and tips.
+    category: communication
+    duration_minutes: 20
+    via_character: amr
+    intent_keywords: [warnings formal, introduction friendly, split, both, compromise, propose, sections]
+    completes_tasks: [clarify]
+    effects:
+      - { var: stakeholder_alignment, value: 50 }
+      - { var: safety_risk, value: -20 }
+    consequence: Both stakeholders accept your proposal in a joint reply.
+    character_response: "That works for Legal, provided the warnings are complete and formal. Mai agrees too."
+  - id: follow_legal_only
+    label: Follow Legal's instruction only
+    description: Translate everything in formal MSA without consulting Marketing.
+    category: decision
+    requires_justification: true
+    exclusive_group: approach
+    effects:
+      - { var: stakeholder_alignment, value: -10 }
+      - { var: safety_risk, value: -15 }
+    consequence: Legal is satisfied; Marketing complains the leaflet is off-brand.
+  - id: follow_marketing_only
+    label: Follow Marketing's instruction only
+    description: Translate everything in friendly colloquial Arabic.
+    category: decision
+    requires_justification: true
+    exclusive_group: approach
+    effects:
+      - { var: stakeholder_alignment, value: -10 }
+      - { var: safety_risk, value: 25 }
+    consequence: Marketing is happy; Legal rejects the leaflet because the warnings sound informal.
+
+events:
+  - id: legal_reminder
+    title: Legal reminder
+    at_minute: 60
+    when: { not: { action_taken: propose_split_register } }
+    message:
+      sender: amr
+      subject: "Reminder"
+      body: "Please remember: warnings must be complete and formal."
+    notification: Legal reminds you about the warnings.
+
+submissions:
+  - id: leaflet_translation
+    title: Arabic leaflet
+    task_id: translate
+    min_words: 40
+    direction: rtl
+    language: ar
+    prompt: Translate the full leaflet into Arabic according to your agreed approach.
+  - id: justification_note
+    title: Justification note (English)
+    min_words: 40
+    prompt: Explain how you reconciled the two requirements and why.
+
+outcomes:
+  - id: aligned
+    title: Both stakeholders aligned
+    description: A safe, complete translation was delivered with an agreed tone.
+    when: { all: [ { submitted: leaflet_translation }, { var: stakeholder_alignment, op: ">=", value: 60 } ] }
+  - id: delivered_one_sided
+    title: Delivered, but one stakeholder unhappy
+    description: A translation was delivered without resolving the conflict.
+    when: { submitted: leaflet_translation }
+  - id: not_delivered
+    title: Not delivered
+    description: No translation was delivered.
+
+alternative_approaches:
+  - Use formal MSA for all safety warnings and a friendly tone in the welcome and tips, agreed in writing with both stakeholders.
+  - Produce two short tone samples and let the client choose before translating everything.
+
+rubric:
+  title: Conflicting requirements rubric
+  criteria:
+    - id: accuracy
+      name: Accuracy of safety information
+      competency: translation_accuracy
+      weight: 35
+      description: All four warnings are complete and unambiguous.
+      evidence_sources: ["submission:leaflet_translation"]
+      expected_concepts: ["الماء", "الحد الأقصى", "الأطفال", "8", "افصل", "التنظيف"]
+      concepts_to_revise: [Preservation of meaning]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Warnings missing or wrong." }
+        - { score: 50, label: Developing, descriptor: "Some warnings incomplete." }
+        - { score: 75, label: Proficient, descriptor: "All warnings correct." }
+        - { score: 95, label: Excellent, descriptor: "All warnings precise and clearly formatted." }
+    - id: negotiation
+      name: Negotiation of requirements
+      competency: negotiation
+      weight: 30
+      description: Finds a solution that respects both stakeholders' core needs.
+      evidence_sources: [actions, messages, "submission:justification_note"]
+      objective_weight: 0.6
+      objective_base: 20
+      objective_signals:
+        - { when: { action_taken: propose_split_register }, points: 70, description: "Proposed an agreed split register." }
+      expected_concepts: [warnings, formal, friendly, both, agree, legal, marketing]
+      concepts_to_revise: [Clarification requests, Handling client feedback]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Conflict ignored." }
+        - { score: 50, label: Developing, descriptor: "One side chosen without consultation." }
+        - { score: 75, label: Proficient, descriptor: "Agreed compromise." }
+        - { score: 95, label: Excellent, descriptor: "Compromise justified by purpose and documented." }
+    - id: adaptation
+      name: Register and adaptation
+      competency: cultural_adaptation
+      weight: 20
+      description: Tone fits each section and the audience.
+      evidence_sources: ["submission:leaflet_translation", "submission:justification_note"]
+      expected_concepts: ["أهلاً", "شاي", register, tone, "تحذيرات"]
+      concepts_to_revise: [Cultural adaptation and localisation]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Inappropriate tone." }
+        - { score: 50, label: Developing, descriptor: "Uneven tone." }
+        - { score: 75, label: Proficient, descriptor: "Appropriate tone per section." }
+        - { score: 95, label: Excellent, descriptor: "Natural, purposeful tone throughout." }
+    - id: ethics
+      name: Professional judgement
+      competency: professional_ethics
+      weight: 15
+      description: Never compromises safety information for style.
+      evidence_sources: [actions, "submission:justification_note"]
+      objective_weight: 0.6
+      objective_base: 50
+      objective_signals:
+        - { when: { action_taken: follow_marketing_only }, points: -40, description: "Made safety warnings informal." }
+        - { when: { action_taken: propose_split_register }, points: 40, description: "Protected safety content while meeting brand needs." }
+      expected_concepts: [safety, warning, complete, responsib]
+      concepts_to_revise: [Professional ethics in translation]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Safety compromised." }
+        - { score: 50, label: Developing, descriptor: "Safety preserved without explanation." }
+        - { score: 75, label: Proficient, descriptor: "Safety explicitly prioritised." }
+        - { score: 95, label: Excellent, descriptor: "Safety prioritised and explained to the client." }

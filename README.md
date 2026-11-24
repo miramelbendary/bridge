@@ -1,86 +1,113 @@
 # BRIDGE
 
-**BRIDGE: An AI-Powered Adaptive Workplace Simulation and Competency Assessment Platform for
-University Students.**
+**An AI-Powered Adaptive Workplace Simulation and Competency Assessment Platform for University
+Students.**
 
-BRIDGE lets students enter simulated workplaces (International Trade, Translation, INFOCOM),
-interact with AI-powered colleagues and clients, make decisions with real consequences, and receive
-rubric-based, evidence-backed formative feedback.
+Students step into simulated workplaces, talk to AI-backed colleagues and clients, read real-looking
+documents, make decisions with consequences, write professional deliverables, and receive a
+rubric-based report whose every score points to evidence from their own work. Professors review and
+correct assessments; administrators manage the platform.
 
-> **Status: Phase 1 (foundations) complete.** Authentication, authorization, database, migrations,
-> CI and documentation are in place. There are **no simulations, AI features or assessments yet**;
-> see [ROADMAP.md](ROADMAP.md).
-
-## Repository layout
-
-| Path | Contents |
+| Specialization | Scenarios |
 |---|---|
-| `backend/` | FastAPI API, SQLAlchemy models, Alembic migrations, pytest suite |
-| `backend/app/{api,models,schemas,services,security}` | Implemented in Phase 1 |
-| `backend/app/{simulation,ai,assessment,recommendations,knowledge}` | Reserved for later phases |
-| `frontend/` | Next.js 16 (App Router, TypeScript, Tailwind CSS 4) |
-| `scenarios/` | Versioned scenario configurations (from Phase 3) |
-| `infrastructure/` | Docker Compose for local PostgreSQL + API |
-| `scripts/` | Developer helper scripts |
-| `docs/` | Architecture, database, API, security, testing, limitations, deployment |
+| International Trade | *Delayed International Shipment* · *Unexpected Freight Cost Increase* |
+| Translation (English → Arabic, right-to-left) | *Demanding International Client* · *Conflicting Translation Requirements* |
+| INFOCOM — Information and Communication | *Corporate Media Crisis* · *Misinformation and Public Response* |
 
-## Quick start
+All organisations, people and events are fictional. BRIDGE is a **formative** learning tool, not a
+high-stakes exam system.
 
-Requirements: Python 3.12+ (3.14 verified), Node.js 20.9+ (24 verified), PostgreSQL 17 (or Docker).
+## Run it in one step
 
-### 1. Database
+You need **Python 3.12+** and **Node.js 20.9+**. No database server and no API key are needed.
 
-With Docker:
+**Windows:** double-click `start.cmd` (or run `powershell -ExecutionPolicy Bypass -File start.ps1`).
+
+**macOS / Linux:**
 
 ```bash
-cp .env.example .env    # edit the secrets
-docker compose -f infrastructure/docker-compose.yml --env-file .env up --build
+./start.sh
 ```
 
-This starts PostgreSQL and the API on <http://localhost:8000> (migrations run automatically).
-Without Docker, point `DATABASE_URL` at any PostgreSQL 17 instance.
+The first run takes a few minutes (it installs dependencies, creates a local database with demo
+data and builds the web app). Then open <http://localhost:3000> and sign in with a demo account
+(password **`bridge-demo-2026`**):
 
-### 2. Backend (without Docker)
+| Role | Email |
+|---|---|
+| Student | `demo.student@example.com` |
+| Professor | `demo.professor@example.com` |
+| Administrator | `demo.admin@example.com` |
 
-```bash
-cd backend
-python -m venv .venv
-.venv/Scripts/activate          # Windows;  source .venv/bin/activate on macOS/Linux
-pip install -r requirements-dev.lock
-pip install --no-deps -e .
-cp .env.example .env            # set DATABASE_URL and LOCAL_JWT_SECRET
-alembic upgrade head
-python -m app.cli create-user --email admin@bridge.example.org --display-name "Admin" --role admin
-uvicorn app.main:create_app --factory --reload
+Press **Ctrl+C** to stop. Next starts take a few seconds.
+
+> **Windows:** keep the folder at a short path such as `C:\bridge`. Very long paths break some
+> Python/Node components on Windows.
+
+**With Docker instead:** `cp .env.example .env`, edit the two secrets, then `docker compose up --build`
+(PostgreSQL + API + web app). See [docs/SHARING.md](docs/SHARING.md).
+
+## AI: offline by default, Claude optional
+
+Out of the box BRIDGE uses a **deterministic mock AI** — free, offline, and clearly labelled in the
+interface. Characters answer from scenario-authored lines, free-text messages are matched to
+workplace actions by keywords, and assessments use a transparent keyword-and-evidence evaluator.
+
+To use the real Claude API, set in `backend/.env`:
+
+```
+AI_PROVIDER=anthropic
+ANTHROPIC_API_KEY=your-key
 ```
 
-API docs (development only): <http://localhost:8000/docs>
+then restart, and choose the provider in **Admin → AI and platform settings**. Usage limits and
+cost budgets are enforced; if the API fails, BRIDGE falls back to labelled scripted replies.
 
-### 3. Frontend
+## What's inside
 
-```bash
-cd frontend
-npm install
-cp .env.example .env.local
-npm run dev
-```
-
-Open <http://localhost:3000>, create a student account, and you will land on the dashboard, which
-loads your profile and the specializations from the API.
-
-### Checks
-
-```bash
-scripts/check.sh
-```
-
-> **Windows note:** keep the repository at a short path (for example `C:\dev\bridge`). Very long
-> paths exceed the Windows 260-character limit and break loading compiled Python/Node extensions.
+- **Simulation engine** — deterministic state machine: variables, events, timed and conditional
+  triggers, mutually exclusive decisions, difficulty levels, training vs assessment mode, an
+  append-only event log, optimistic concurrency and idempotent requests.
+- **AI characters** — isolated per-character contexts; restricted facts never reach the model until
+  unlocked; AI can only *propose* an action, which the engine validates.
+- **Assessment** — rubric criteria with performance levels; scores blend validated qualitative
+  judgement with rule-based signals; evidence must reference real student actions; insufficient
+  evidence is never counted as failure; weighted totals are computed by code.
+- **Adaptive learning** — competency profile with confidence levels, explainable recommendations,
+  approved course materials cited in feedback.
+- **Professors** — courses, assignments, progress and common weaknesses, assessment review with
+  audited corrections, scenario and rubric editors (versioned), resource uploads, CSV export.
+- **Administrators** — users and roles, AI provider and limits, usage and cost, scenario
+  publication, specializations, audit log.
 
 ## Documentation
 
-- [ROADMAP.md](ROADMAP.md) · [CHANGELOG.md](CHANGELOG.md) · [CLAUDE.md](CLAUDE.md) (AI agent guide)
-- [Architecture](docs/ARCHITECTURE.md) · [Requirements](docs/REQUIREMENTS.md) ·
-  [Database](docs/DATABASE.md) · [API](docs/API.md) · [AI design](docs/AI_DESIGN.md)
-- [Security](docs/SECURITY.md) · [Testing](docs/TESTING.md) · [Limitations](docs/LIMITATIONS.md) ·
-  [Deployment](docs/DEPLOYMENT.md)
+| | |
+|---|---|
+| [docs/SHARING.md](docs/SHARING.md) | How to run it and send it to friends |
+| [docs/USER_GUIDE.md](docs/USER_GUIDE.md) | Guide for students, professors and administrators |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design and decisions |
+| [docs/API.md](docs/API.md) · [docs/DATABASE.md](docs/DATABASE.md) | API reference · schema and ERD |
+| [docs/AI_DESIGN.md](docs/AI_DESIGN.md) | AI safety, validation and fallbacks |
+| [docs/SECURITY.md](docs/SECURITY.md) | Security and privacy controls and limits |
+| [docs/TESTING.md](docs/TESTING.md) | Test strategy and actual results |
+| [docs/EVALUATION.md](docs/EVALUATION.md) | Academic validation plan and measurement tools |
+| [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | What is not done or not verified |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production hosting |
+| [ROADMAP.md](ROADMAP.md) · [CHANGELOG.md](CHANGELOG.md) · [CLAUDE.md](CLAUDE.md) | Status · history · contributor/agent guide |
+
+## Developing
+
+```bash
+# backend (from backend/)
+python -m venv .venv && .venv/Scripts/activate      # macOS/Linux: source .venv/bin/activate
+pip install -r requirements-dev.lock && pip install --no-deps -e .
+python -m app.cli setup                              # migrate + scenarios + demo data
+uvicorn app.main:create_app --factory --reload       # http://localhost:8000/docs
+pytest && ruff check . && ruff format --check .
+
+# frontend (from frontend/)
+npm ci && npm run dev                                # http://localhost:3000
+npm run lint && npm run typecheck && npm run build
+npm run test:e2e                                     # Playwright, starts its own servers
+```

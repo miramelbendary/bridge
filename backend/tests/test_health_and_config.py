@@ -88,6 +88,24 @@ def test_cors_origins_accepts_comma_separated_string(database_url):
     assert s.cors_origins == ["http://a.test", "http://b.test"]
 
 
+def test_settings_load_from_env_and_dotenv(tmp_path, monkeypatch):
+    """Regression: comma-separated CORS_ORIGINS in .env / environment (as start.ps1 and Docker
+    Compose write it) must not crash startup."""
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "DATABASE_URL=sqlite:///./x.db\n"
+        "LOCAL_JWT_SECRET=" + "s" * 40 + "\n"
+        "CORS_ORIGINS=http://localhost:3000\n"
+        "AI_PROVIDER=mock\n"
+        "ANTHROPIC_API_KEY=\n",
+        encoding="utf-8",
+    )
+    s = Settings(_env_file=str(env_file))
+    assert s.cors_origins == ["http://localhost:3000"]
+    monkeypatch.setenv("CORS_ORIGINS", "http://a.test,http://b.test")
+    assert Settings(_env_file=str(env_file)).cors_origins == ["http://a.test", "http://b.test"]
+
+
 def test_docs_disabled_in_production():
     from fastapi.testclient import TestClient
 

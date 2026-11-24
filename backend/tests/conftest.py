@@ -15,12 +15,13 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, delete
+from sqlalchemy import create_engine, delete, update
 
 from app.core.config import Settings
 from app.main import create_app
-from app.models import AuditLog, User, UserProfile
+from app.models import Base, Scenario, Specialization, User
 from app.models.user import Role
+from app.services.scenarios import sync_from_files
 from app.services.users import register_local_user
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -69,14 +70,32 @@ def settings(make_settings) -> Settings:
     return make_settings()
 
 
+SEEDED_SPECIALIZATIONS = ("translation", "international_trade", "infocom")
+
+
 @pytest.fixture(autouse=True)
 def _clean_tables(database_url: str) -> Iterator[None]:
     yield
     engine = create_engine(database_url)
     with engine.begin() as conn:
-        for model in (AuditLog, UserProfile, User):
-            conn.execute(delete(model))
+        # Break the scenarios <-> scenario_versions cycle, then delete children before parents.
+        conn.execute(update(Scenario).values(current_version_id=None))
+        for table in reversed(Base.metadata.sorted_tables):
+            if table.name == "specializations":
+                conn.execute(
+                    delete(Specialization).where(Specialization.code.not_in(SEEDED_SPECIALIZATIONS))
+                )
+            else:
+                conn.execute(table.delete())
     engine.dispose()
+
+
+@pytest.fixture
+def synced(app) -> None:
+    """Load the real scenario files into the test database."""
+    with app.state.db.session_factory() as session:
+        sync_from_files(session)
+        session.commit()
 
 
 @pytest.fixture

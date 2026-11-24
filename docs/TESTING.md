@@ -1,55 +1,48 @@
 # Testing
 
-## Backend (pytest)
-
+## How to run
 ```bash
-cd backend
-pytest                                                     # SQLite temp DB
-TEST_DATABASE_URL=postgresql+psycopg://bridge:bridge@localhost:5432/bridge_test pytest
+cd backend && pytest                       # SQLite; set TEST_DATABASE_URL for PostgreSQL
+cd frontend && npm run lint && npm run typecheck && npm run build
+cd frontend && npm run test:e2e            # needs BRIDGE_PYTHON (python with backend deps);
+                                           # PW_CHANNEL=msedge to use installed Edge on Windows
+cd backend && python -m app.cli check-scenarios
 ```
 
-The fixture runs `alembic downgrade base` then `upgrade head`, so **the real migrations build the
-test schema**. Each test gets a fresh `create_app(settings)` and tables are emptied afterwards
-(seeded specializations are kept). Use a dedicated test database: it is wiped.
-
+## Backend suite (121 tests)
 | File | Covers |
 |---|---|
-| `test_health_and_config.py` | Liveness/readiness (incl. DB down → 503), security headers, CORS allow-list, settings validation (short/default secrets, SQLite and docs in production, wildcard CORS) |
-| `test_auth_local.py` | Register/login, email normalisation, Argon2 hashing, role cannot be self-assigned, duplicates, weak input, enumeration-safe errors, audit without secrets, inactive users, token tampering (signature, expiry, audience, issuer, subject, `alg: none`), ignored role claims, rate limiting, local endpoints off in Supabase mode |
-| `test_auth_supabase.py` | HS256 and ES256/JWKS verification with minted tokens, JIT provisioning as student, metadata role ignored, wrong secret/audience/issuer, local tokens rejected, no takeover of local accounts |
-| `test_rbac_and_profile.py` | Permission matrix, seeded specializations, profile/specialization update, unknown specialization, students/professors denied admin routes (and audited), admin role changes take effect immediately, self/last-admin protection, 404/422 cases |
-| `test_migrations.py` | ORM models and migrations have zero drift; full downgrade/upgrade round trip |
+| `test_health_and_config.py` | Health/readiness, headers, CORS, settings validation incl. `.env` parsing |
+| `test_auth_local.py`, `test_auth_supabase.py` | Registration/login, hashing, enumeration safety, token tampering, `alg: none`, Supabase HS256/JWKS, account-takeover prevention, rate limiting |
+| `test_rbac_and_profile.py` | Permission matrix, specializations, profile, admin role management |
+| `test_migrations.py` | Zero model/migration drift, downgrade/upgrade round trip |
+| `test_engine.py` | Consequences and branching (best/late/over-budget outcomes), justification rule, exclusive decisions, preconditions, clamping, hints only in training, hidden variables, difficulty effects, time limit, finality, word minimums, determinism, event ordering, restricted facts withheld until unlocked, **random branch exploration of every scenario at every difficulty and mode** (bounds and valid outcome invariants) |
+| `test_scenario_schema.py` | Rejection of bad weights, unknown references, malformed conditions, extra fields, unknown competencies, missing default outcome; no code execution in conditions |
+| `test_ai_and_assessment.py` | Intent → action via engine; AI cannot trigger unlisted/unavailable actions; low-confidence ignored; restricted-fact leak blocked; provider failure → labelled fallback; message limit; Claude provider refusal/invalid-output mapping (stubbed); injection detector; evidence-based deterministic weighting; insufficient evidence ≠ failure; invented evidence rejected; invalid levels rejected; assessor failure → mock; injection flagged for review; one assessment per session; strengths consistent with scores |
+| `test_platform_api.py` | Students cannot access others' sessions; professors only via course membership, read-only; teaching/admin endpoints denied to students; idempotency; stale-write conflict; recovery after reload; engine error codes; finished sessions read-only; versioning keeps old sessions on old versions; scenario/rubric editing; only admins publish; assignments fix mode/difficulty; review audit trail; progress & CSV; recommendations; resource visibility and validation; admin settings, registration closing, deactivation, specializations; demo seed idempotent |
+| `test_evaluation.py` | Evaluation report uses only recorded data; consistency re-runs persist nothing |
 
-## Frontend
+## End-to-end (Playwright, 6 tests)
+Real backend (fresh DB + demo data, mock AI) and production frontend build:
+1. Register → choose specialization → start scenario → free-text message becomes an action → justified decision → deliverable → finish → report → competency profile.
+2. Translation deliverables render right-to-left (`dir="rtl" lang="ar"`).
+3. Assessment mode has no hints; students get "Not found" on teaching/admin pages.
+4. Professor corrects a criterion with justification; status becomes "Reviewed by professor".
+5. Administrator console renders settings, usage and audit log.
+6. axe-core WCAG 2 A/AA scan of 6 pages: no serious or critical violations.
 
-```bash
-cd frontend
-npm run lint && npm run typecheck && npm run build
-```
-
-No automated frontend tests yet: Playwright end-to-end tests are planned for Phase 2, once the
-interface stabilises. The Phase 1 user journey was verified manually in a browser (see below).
-
-## Continuous integration
-`.github/workflows/ci.yml` on every push to `main` and every pull request:
-- Backend: ruff lint + format check, PostgreSQL DDL render, pytest on **PostgreSQL 17** (service
-  container), pytest on SQLite.
-- Frontend: `npm ci`, lint, typecheck, production build.
-
-## Phase 1 results (actual)
-Recorded on 2026-11-25, Windows 11, Python 3.14.7, Node 24.19:
-
+## Results recorded on 2026-11-25 (Windows 11, Python 3.14.7, Node 24.19)
 | Check | Result |
 |---|---|
-| `pytest` (SQLite) | **42 passed** |
-| `pytest` from a clean venv using only the lock files | 42 passed, `pip check` clean |
-| `ruff check` / `ruff format --check` | Clean |
-| `alembic upgrade head` (SQLite, CLI) / `--sql` for PostgreSQL | Succeeds / renders valid DDL |
-| Live API smoke test (uvicorn): readiness, login, `/me`, specializations, audit log | Pass |
-| `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
-| Manual browser journey (production build): password-mismatch error → register → dashboard with live API data → session cookie not readable by page JS → sign out → `/dashboard` redirects to sign-in → wrong password error → sign in → API stopped shows the dashboard error state | Pass |
-| pytest on PostgreSQL | **Not run locally** (no PostgreSQL available); runs in CI |
-| Docker image build / Compose stack | **Not run** (Docker not available) |
-
-Remaining warning: Starlette deprecates using `httpx` with its TestClient in favour of `httpx2`.
-Harmless for now; revisit when upgrading test tooling.
+| Backend `pytest` (SQLite) | **121 passed** |
+| Fresh venv from lock files + `pip check` + pytest | Clean; 118 passed at that point (3 tests added afterwards, then 121 passed) |
+| `ruff check`, `ruff format --check` | Clean |
+| `check-scenarios` | 6/6 valid |
+| Frontend lint, typecheck, production build | Pass (20 routes) |
+| Playwright e2e (Edge channel) | **6 passed** |
+| Manual browser run (student, professor, admin journeys) | Pass; found and fixed: overstated strengths, double full stops, 4 px overflow on the upload form |
+| Clean-copy run of `start.ps1` (no venv/node_modules/.env/db) | Pass after fixing a `.env` CORS parsing bug the run exposed |
+| Backend tests on PostgreSQL | **Not run locally** (no PostgreSQL); configured in CI |
+| Docker images / Compose | **Not run** (no Docker on the build machine) |
+| Claude provider against the real API | **Not run** (no key); covered by stubbed tests |
+| `start.sh` on macOS/Linux | **Not run** (Windows machine) |

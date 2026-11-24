@@ -1,83 +1,58 @@
 # Database
 
-PostgreSQL 17 is the supported database. Schema changes are made only through Alembic migrations
-in `backend/alembic/versions/`. SQLite is accepted for local tests only and rejected in production.
+PostgreSQL 17 in production; SQLite for local runs and tests (rejected in production). The schema is
+created only by Alembic migrations (`0001_foundations`, `0002_platform`); a test fails if models and
+migrations drift.
 
-## Entity relationship diagram (Phase 1)
+## Entity relationship diagram
 
 ```mermaid
 erDiagram
-  users ||--|| user_profiles : "has"
-  specializations |o--o{ user_profiles : "chosen by"
-  users |o--o{ audit_logs : "acts in"
-
-  users {
-    uuid id PK
-    varchar email UK "lower-cased"
-    varchar auth_provider "local | supabase"
-    varchar auth_subject "external id (supabase)"
-    varchar password_hash "argon2id (local only)"
-    varchar role "student | professor | admin"
-    bool is_active
-    timestamptz last_login_at
-    timestamptz created_at
-    timestamptz updated_at
-  }
-  user_profiles {
-    uuid user_id PK,FK
-    varchar display_name
-    uuid specialization_id FK "nullable"
-    timestamptz created_at
-    timestamptz updated_at
-  }
-  specializations {
-    uuid id PK
-    varchar code UK
-    varchar name
-    text description
-    bool is_active
-    timestamptz created_at
-    timestamptz updated_at
-  }
-  audit_logs {
-    uuid id PK
-    timestamptz occurred_at
-    uuid actor_user_id FK "nullable, SET NULL"
-    varchar action
-    varchar outcome "success | failure | denied"
-    varchar target_type
-    varchar target_id
-    varchar ip_address
-    jsonb details
-  }
+  users ||--|| user_profiles : has
+  specializations |o--o{ user_profiles : chosen
+  users |o--o{ audit_logs : acts
+  specializations ||--o{ scenarios : groups
+  scenarios ||--o{ scenario_versions : "immutable versions"
+  scenarios |o--|| scenario_versions : "current version"
+  scenario_versions ||--o{ simulation_sessions : "played as"
+  users ||--o{ simulation_sessions : plays
+  simulation_sessions ||--o{ session_events : "ordered log"
+  simulation_sessions ||--o| assessments : assessed
+  assessments ||--o{ assessment_criterion_results : criteria
+  assessments ||--o{ assessment_reviews : "professor corrections"
+  users ||--o{ courses : owns
+  courses ||--o{ course_members : includes
+  users ||--o{ course_members : member
+  courses ||--o{ course_assignments : assigns
+  scenarios ||--o{ course_assignments : assigned
+  course_assignments |o--o{ simulation_sessions : "attempted via"
+  educational_resources ||--o{ resource_chunks : "split into"
+  users |o--o{ ai_usage_logs : uses
+  simulation_sessions |o--o{ ai_usage_logs : "within"
 ```
 
 ## Tables
 
-| Table | Purpose | Key constraints |
-|---|---|---|
-| `users` | Accounts. Identity from an auth provider; role owned by BRIDGE | `email` unique; `(auth_provider, auth_subject)` unique; CHECK role/provider values; CHECK local accounts have a password hash and external accounts a subject |
-| `user_profiles` | Minimal profile: display name and chosen specialization | PK = FK to `users` (cascade delete); specialization FK `SET NULL` |
-| `specializations` | Academic specializations; new ones are rows, not code | `code` unique. Seeded: `translation`, `international_trade`, `infocom` (fixed UUIDs) |
-| `audit_logs` | Append-only security/admin events (register, login success/failure, denied access, role changes, CLI user creation) | CHECK outcome; indexes `(actor_user_id, occurred_at)`, `(action, occurred_at)`; actor FK `SET NULL` so deleting a user keeps the history |
+| Table | Purpose |
+|---|---|
+| `users`, `user_profiles` | Accounts (local or Supabase identity) and minimal profile (display name, specialization). Role lives here, never in tokens. |
+| `specializations` | Data-driven list; new specializations are rows. |
+| `audit_logs` | Security/admin events (sign-ins, denials, role changes, reviews, uploads, settings). |
+| `scenarios` | Identity, specialization, publication status, pointer to the current version. |
+| `scenario_versions` | Immutable full definition (incl. rubric) + content hash + change note. |
+| `simulation_sessions` | One attempt: mode, difficulty, status, outcome, authoritative `state` JSON, `state_version` for optimistic locking. |
+| `session_events` | Append-only ordered events (`seq` unique per session) with optional idempotency key; the evidence source. |
+| `assessments` | Provider/model, mock flag, rubric snapshot, original and final overall, flags, report JSON, status. |
+| `assessment_criterion_results` | Per criterion: qualitative, objective, original and final score, evidence refs, weaknesses, improvements, uncertainty. |
+| `assessment_reviews` | Professor corrections with justification (append-only). |
+| `courses`, `course_members`, `course_assignments` | Teaching structure; membership authorizes professor access. |
+| `educational_resources`, `resource_chunks` | Uploaded approved material, versioned by title, visibility `students`/`professors`, chunked for retrieval. |
+| `ai_usage_logs` | One row per AI call or fallback: purpose, provider, model, tokens, latency, estimated cost, success, fallback, error code. No prompts or student text. |
+| `platform_settings` | Admin-editable settings (never secrets). |
 
-## Conventions
-- UUID primary keys (generated by the application).
-- `created_at` / `updated_at` with `timezone=True` on every mutable table.
-- Deterministic constraint names (`ix_`, `uq_`, `ck_`, `fk_`, `pk_`) so migrations are reviewable.
-- `details` is `JSONB` on PostgreSQL. Never store passwords, tokens or full submissions there.
-
-## Deferred tables (added with the phase that needs them)
-Courses, competencies, scenarios and scenario versions, characters, documents, events, simulation
-sessions/state, student actions, messages, tasks, submissions, rubrics and rubric versions,
-assessments, criterion results, reviews, competency progress, recommendations, educational
-resources (+ embeddings), AI usage logs. Adding them now, before their behaviour is designed, would
-create schema we would have to migrate away from.
-
-## Migration workflow
-```bash
-cd backend
-alembic revision --autogenerate -m "describe change"   # then review the file by hand
-alembic upgrade head
-pytest tests/test_migrations.py                        # models and migrations must match
-```
+## Notes
+- UUID primary keys; timezone-aware timestamps; deterministic constraint names.
+- `scenarios.current_version_id` ↔ `scenario_versions.scenario_id` is a cycle; the FK is added after
+  both tables exist in the migration and dropped first on downgrade.
+- JSON columns are `JSONB` on PostgreSQL.
+- Deleting a user cascades to their sessions/assessments; audit and AI logs keep `NULL` actor.

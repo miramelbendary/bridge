@@ -1,0 +1,396 @@
+# International Trade — Scenario 2: Unexpected Freight Cost Increase
+# All companies, people and figures are fictional and simplified for teaching.
+slug: freight-cost-increase
+specialization: international_trade
+title: Unexpected Freight Cost Increase
+summary: >
+  Two days before dispatch, the carrier adds a peak-season surcharge that wipes out most of your
+  margin on a CIF export. Compare options, manage the budget, communicate with stakeholders and
+  justify a commercially reasonable decision.
+estimated_minutes: 25
+review_status: "Draft: commercial facts require review by an international trade lecturer."
+learning_objectives:
+  - Analyse how a freight cost change affects margin under a CIF sale.
+  - Check contract clauses before asking a customer to share costs.
+  - Compare alternatives on cost, time and risk.
+  - Communicate a cost decision clearly to management and the customer.
+
+context:
+  organization: Delta Agro Export (fictional), Damietta, Egypt — exporter of dried herbs
+  student_role: Export Coordinator
+  briefing: >
+    You sold one 40' container of dried mint and chamomile to Rhein Kräuter GmbH (fictional) in
+    Hamburg, CIF Hamburg, for USD 48,000, expecting a margin of USD 4,200 after freight of
+    USD 2,800. Today the carrier announced a peak-season surcharge: freight is now USD 4,600.
+    Dispatch is in two days.
+
+difficulties:
+  beginner:
+    time_limit_minutes: 360
+  intermediate:
+    time_limit_minutes: 300
+  advanced:
+    time_limit_minutes: 240
+    variable_overrides: { margin: 3600 }
+  professional:
+    time_limit_minutes: 200
+    hints_available: false
+    variable_overrides: { margin: 3600 }
+
+variables:
+  margin:
+    label: Expected margin
+    initial: 4200
+    unit: USD
+  customer_trust:
+    label: Customer trust
+    initial: 70
+    min: 0
+    max: 100
+    unit: "%"
+  schedule_risk:
+    label: Schedule risk
+    initial: 30
+    min: 0
+    max: 100
+    unit: "%"
+
+characters:
+  - id: samir
+    name: Samir Gaber
+    role: Export Manager
+    kind: manager
+    organization: Delta Agro Export
+    personality: Pragmatic, margin-focused, values long-term customers.
+    communication_style: Numbers first, then reasons.
+    objectives:
+      - Keep a positive margin on the order.
+      - Keep Rhein Kräuter as a repeat customer.
+    knowledge:
+      - The company's minimum acceptable margin on this order is USD 2,000.
+      - Rhein Kräuter has ordered four times this year.
+    initial_mood: concerned
+    faq:
+      - keywords: [minimum, acceptable, margin]
+        reply: "We need at least USD 2,000 on this order. Below that, we're working for free."
+    fallback_replies:
+      - "Show me the numbers for each option."
+      - "What's your recommendation?"
+  - id: lena
+    name: Lena Hoffmann
+    role: Purchasing Manager
+    kind: customer
+    organization: Rhein Kräuter GmbH (fictional), Hamburg
+    personality: Fair, contract-minded, dislikes surprises.
+    communication_style: Formal, concise English.
+    objectives:
+      - Receive the goods by the agreed date at the agreed price.
+    knowledge:
+      - The contract price is fixed CIF Hamburg; only clause 9 allows a bunker (fuel) adjustment.
+      - A delay of one week would be acceptable if agreed in advance.
+    restricted:
+      - fact: She would accept a one-week later arrival if Delta Agro shares the reason transparently.
+        reveal_when: { action_taken: check_contract_clauses }
+    initial_mood: neutral
+    faq:
+      - keywords: [surcharge, share, pay, cost]
+        reply: "Our contract price is CIF and fixed. Clause 9 only covers bunker adjustments, not peak-season surcharges."
+    fallback_replies:
+      - "Please keep me informed of any change to the shipping date."
+  - id: tarek
+    name: Tarek Ali
+    role: Freight Forwarder
+    kind: stakeholder
+    organization: Nile Gate Forwarding (fictional)
+    personality: Helpful, quick with alternatives.
+    communication_style: Short, numeric.
+    objectives:
+      - Keep the shipment moving.
+    knowledge:
+      - Carrier B can take the container for USD 3,300 but sails 6 days later.
+      - Consolidating with another exporter's booking next week costs USD 3,000.
+      - The peak-season surcharge may be negotiable for regular shippers by about USD 400.
+    initial_mood: calm
+    fallback_replies:
+      - "Want me to check other sailings?"
+
+documents:
+  - id: sales_contract
+    title: Sales contract (extract) — Delta Agro → Rhein Kräuter
+    kind: contract
+    body: |
+      **Price:** USD 48,000 CIF Hamburg (Incoterms® 2020), fixed.
+
+      **Clause 9 — Bunker adjustment:** if the carrier's bunker adjustment factor (BAF) changes by more than 15% between contract and shipment, the price may be adjusted by the actual change in BAF. No other freight changes are passed on.
+
+      **Delivery:** arrival Hamburg within 30 days of contract; a later date requires the buyer's written agreement.
+  - id: carrier_notice
+    title: Carrier notice — Peak Season Surcharge
+    kind: notice
+    body: |
+      Effective immediately: Peak Season Surcharge (PSS) USD 1,800 per 40' container, Egypt–North Europe.
+      New total ocean freight for your booking: **USD 4,600** (was USD 2,800). BAF unchanged.
+  - id: options
+    title: Forwarder options
+    kind: quotation
+    initially_visible: false
+    body: |
+      | Option | Freight (USD) | Arrival vs plan | Notes |
+      |---|---|---|---|
+      | A. Accept carrier PSS | 4,600 | On time | Margin falls to ~2,400 |
+      | B. Carrier B | 3,300 | +6 days | Needs buyer agreement |
+      | C. Consolidate next week | 3,000 | +7 days | Needs buyer agreement |
+      | D. Negotiate PSS | ~4,200 | On time | Not guaranteed |
+
+tasks:
+  - id: analyse_impact
+    title: Analyse the impact on margin
+    description: Work out what the surcharge does to the margin.
+    hints:
+      - "Under CIF the seller pays the freight — every extra dollar comes out of your margin."
+  - id: check_contract
+    title: Check the contract
+    description: Can any of the increase be passed to the customer?
+    hints:
+      - "Read clause 9 carefully: what exactly can be adjusted?"
+  - id: get_options
+    title: Get alternatives
+    description: Ask the forwarder for options.
+  - id: decide
+    title: Decide and justify
+    description: Choose an option and justify it.
+  - id: communicate
+    title: Communicate the decision
+    description: Inform your manager and, if needed, the customer.
+  - id: memo
+    title: Write a decision memo
+    description: Summarise your analysis and decision.
+
+initial_inbox:
+  - id: manager_note
+    sender: samir
+    subject: "Carrier surcharge — what do we do?"
+    body: "The carrier just added USD 1,800. Please look at options and send me a recommendation today. — Samir"
+
+actions:
+  - id: calculate_margin
+    label: Calculate the margin impact
+    description: Recalculate the expected margin with the new freight.
+    category: investigation
+    duration_minutes: 15
+    completes_tasks: [analyse_impact]
+    consequence: You calculate that accepting the surcharge reduces the margin from USD 4,200 to USD 2,400.
+    training_feedback: Quantifying the impact is the basis for every option.
+  - id: check_contract_clauses
+    label: Check the sales contract clauses
+    description: Read the price, clause 9 and delivery terms.
+    category: investigation
+    duration_minutes: 15
+    completes_tasks: [check_contract]
+    consequence: Clause 9 covers only bunker changes; the peak-season surcharge cannot be passed on. A later arrival needs the buyer's written agreement.
+    training_feedback: The contract determines what you can ask the customer for.
+  - id: ask_forwarder_options
+    label: Ask the forwarder for alternatives
+    description: Request alternative sailings and rates.
+    category: investigation
+    duration_minutes: 20
+    via_character: tarek
+    intent_keywords: [option, alternative, other carrier, cheaper, quote, sailing, consolidat]
+    completes_tasks: [get_options]
+    reveals_documents: [options]
+    consequence: Tarek sends four options with costs and timing.
+    character_response: "Options are in your documents: accept the PSS, Carrier B (+6 days), consolidate next week (+7 days), or I try to negotiate the PSS down."
+  - id: ask_customer_pay_surcharge
+    label: Ask the customer to pay the surcharge
+    description: Request that Rhein Kräuter covers the USD 1,800 increase.
+    category: communication
+    duration_minutes: 10
+    via_character: lena
+    intent_keywords: [pay the surcharge, cover the surcharge, increase the price, pass on]
+    effects: [ { var: customer_trust, value: -15 } ]
+    consequence: Lena points out the price is fixed CIF and clause 9 does not apply. Trust drops.
+    character_response: "With respect, our price is fixed CIF and clause 9 covers only bunker changes. We cannot accept this."
+  - id: negotiate_pss
+    label: Ask the forwarder to negotiate the surcharge
+    description: Ask Tarek to negotiate the PSS with the carrier.
+    category: communication
+    duration_minutes: 30
+    via_character: tarek
+    intent_keywords: [negotiate, reduce the surcharge, discount, lower the pss]
+    available_when: { action_taken: ask_forwarder_options }
+    effects:
+      - { var: margin, value: 400 }
+    consequence: The carrier reduces the surcharge by USD 400 for a regular shipper.
+    character_response: "Good news — they'll take USD 400 off the PSS. New freight USD 4,200."
+  - id: agree_later_arrival
+    label: Ask the customer to agree a later arrival
+    description: Explain the situation and request agreement to arrive about one week later.
+    category: communication
+    duration_minutes: 15
+    via_character: lena
+    intent_keywords: [later, one week, delay, agree, arrival, postpone]
+    available_when: { action_taken: check_contract_clauses }
+    effects: [ { var: customer_trust, value: 3 } ]
+    consequence: Lena agrees in writing to an arrival up to one week later.
+    character_response: "Thank you for being transparent. We can accept arrival up to one week later — please confirm the new date in writing."
+  - id: choose_accept_pss
+    label: "Decision: accept the surcharge and ship on time"
+    description: Ship as planned with the carrier's new rate.
+    category: decision
+    requires_justification: true
+    exclusive_group: decision
+    available_when: { action_taken: ask_forwarder_options }
+    completes_tasks: [decide]
+    effects: [ { var: margin, value: -1800 } ]
+    consequence: The container ships on time; the margin falls by USD 1,800.
+  - id: choose_carrier_b
+    label: "Decision: switch to Carrier B"
+    description: Rebook with Carrier B (USD 3,300, +6 days).
+    category: decision
+    requires_justification: true
+    exclusive_group: decision
+    available_when: { action_taken: ask_forwarder_options }
+    completes_tasks: [decide]
+    effects:
+      - { var: margin, value: -500 }
+      - { var: schedule_risk, value: 20 }
+    consequence: The container sails six days later at USD 3,300.
+  - id: choose_consolidate
+    label: "Decision: consolidate next week"
+    description: Ship with next week's consolidation (USD 3,000, +7 days).
+    category: decision
+    requires_justification: true
+    exclusive_group: decision
+    available_when: { action_taken: ask_forwarder_options }
+    completes_tasks: [decide]
+    effects:
+      - { var: margin, value: -200 }
+      - { var: schedule_risk, value: 25 }
+    consequence: The container ships a week later at USD 3,000.
+  - id: report_to_manager
+    label: Send your recommendation to the manager
+    description: Report the options, numbers and your decision to Samir.
+    category: communication
+    duration_minutes: 10
+    via_character: samir
+    intent_keywords: [recommend, propose, option, margin, decision, summary]
+    completes_tasks: [communicate]
+    consequence: Samir confirms your decision.
+    character_response: "Clear analysis. Agreed — go ahead and keep the customer informed."
+
+events:
+  - id: unapproved_delay
+    title: Customer discovers unapproved delay
+    when:
+      all:
+        - { any: [ { action_taken: choose_carrier_b }, { action_taken: choose_consolidate } ] }
+        - { not: { action_taken: agree_later_arrival } }
+    message:
+      sender: lena
+      subject: "Shipping date changed?"
+      body: "Our system shows a later sailing. This was not agreed — the contract requires our written consent."
+    effects:
+      - { var: customer_trust, value: -25 }
+      - { var: schedule_risk, value: 15 }
+    notification: The customer has noticed an unapproved change to the shipping date.
+
+submissions:
+  - id: decision_memo
+    title: Decision memo
+    task_id: memo
+    min_words: 80
+    prompt: Write a short memo (100–200 words) with the margin calculation, the options compared, the contract position, your decision and how you informed the customer.
+
+outcomes:
+  - id: strong_decision
+    title: Margin protected, customer kept
+    description: The margin stayed above the minimum and the customer agreed to any schedule change.
+    when:
+      all:
+        - { var: margin, op: ">=", value: 3000 }
+        - { var: customer_trust, op: ">=", value: 65 }
+  - id: acceptable
+    title: Acceptable outcome
+    description: The margin stayed above the company minimum with a reasonable customer relationship.
+    when: { all: [ { var: margin, op: ">=", value: 2000 }, { var: customer_trust, op: ">=", value: 50 } ] }
+  - id: weak
+    title: Weak outcome
+    description: The margin fell below the minimum or the customer relationship was damaged.
+
+alternative_approaches:
+  - Get the customer's written agreement to a one-week later arrival and consolidate (lowest cost, small delay).
+  - Ship on time after asking the forwarder to negotiate the surcharge down, accepting a smaller margin to protect the schedule.
+
+rubric:
+  title: Freight cost decision rubric
+  criteria:
+    - id: financial_awareness
+      name: Financial awareness
+      competency: financial_awareness
+      weight: 30
+      description: Quantifies the margin impact and compares options numerically.
+      evidence_sources: [actions, "submission:decision_memo"]
+      objective_weight: 0.5
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: calculate_margin }, points: 30, description: "Calculated the margin impact." }
+        - { when: { var: margin, op: ">=", value: 3000 }, points: 30, description: "Protected most of the margin." }
+        - { when: { var: margin, op: "<", value: 2000 }, points: -30, description: "Margin fell below the company minimum." }
+      expected_concepts: ["4,200", "2,400", margin, "1,800", "3,000", "3,300", usd]
+      concepts_to_revise: [Total landed cost, Cost–benefit comparison of transport modes]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "No numbers." }
+        - { score: 50, label: Developing, descriptor: "Some numbers, no comparison." }
+        - { score: 75, label: Proficient, descriptor: "Options compared on cost and margin." }
+        - { score: 95, label: Excellent, descriptor: "Precise, complete financial comparison." }
+    - id: contractual_understanding
+      name: Contractual understanding
+      competency: contractual_understanding
+      weight: 25
+      description: Understands what CIF and clause 9 allow.
+      evidence_sources: [actions, "submission:decision_memo", "messages:lena"]
+      objective_weight: 0.5
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: check_contract_clauses }, points: 40, description: "Checked the contract." }
+        - { when: { action_taken: ask_customer_pay_surcharge }, points: -20, description: "Asked the customer to pay a cost the contract does not allow." }
+        - { when: { action_taken: agree_later_arrival }, points: 20, description: "Obtained the buyer's agreement to a schedule change." }
+      expected_concepts: [cif, clause 9, bunker, baf, fixed, written agreement, consent]
+      concepts_to_revise: ["Incoterms® 2020: CIF obligations"]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Contract ignored." }
+        - { score: 50, label: Developing, descriptor: "Contract mentioned, misread." }
+        - { score: 75, label: Proficient, descriptor: "Correctly applies CIF and clause 9." }
+        - { score: 95, label: Excellent, descriptor: "Precise use of clauses to shape the decision." }
+    - id: decision_making
+      name: Decision-making
+      competency: decision_making
+      weight: 25
+      description: Makes a timely, justified decision balancing cost, time and relationship.
+      evidence_sources: [actions, "submission:decision_memo"]
+      expected_concepts: [because, trade-off, risk, relationship, schedule, recommend]
+      concepts_to_revise: [Cost–benefit comparison of transport modes]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "No clear decision." }
+        - { score: 50, label: Developing, descriptor: "Decision with weak justification." }
+        - { score: 75, label: Proficient, descriptor: "Justified decision with trade-offs." }
+        - { score: 95, label: Excellent, descriptor: "Well-reasoned decision anticipating consequences." }
+    - id: communication
+      name: Stakeholder communication
+      competency: communication
+      weight: 20
+      description: Informs manager and customer clearly and appropriately.
+      evidence_sources: [messages, "submission:decision_memo"]
+      objective_weight: 0.4
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: report_to_manager }, points: 30, description: "Reported to the manager." }
+        - { when: { event_fired: unapproved_delay }, points: -25, description: "Changed the schedule without the customer's agreement." }
+        - { when: { action_taken: agree_later_arrival }, points: 25, description: "Agreed the schedule change transparently." }
+      expected_concepts: [inform, agree, confirm, transparent, recommend]
+      concepts_to_revise: [Delivering bad news professionally]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Stakeholders not informed." }
+        - { score: 50, label: Developing, descriptor: "Partial or late communication." }
+        - { score: 75, label: Proficient, descriptor: "Clear communication with both stakeholders." }
+        - { score: 95, label: Excellent, descriptor: "Proactive, transparent and well-framed." }

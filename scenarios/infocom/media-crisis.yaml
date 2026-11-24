@@ -1,0 +1,595 @@
+# INFOCOM — Scenario 1: Corporate Media Crisis
+# All organisations, people, videos and reactions are fictional. Audience reactions are SIMULATED.
+slug: media-crisis
+specialization: infocom
+title: Corporate Media Crisis
+summary: >
+  A video claiming to show unhygienic food handling at your company's kitchen is spreading online.
+  Verify what the video really shows, coordinate internally, answer a journalist, publish a
+  statement and plan the reputation recovery — without making things worse.
+estimated_minutes: 40
+review_status: "Draft: crisis-communication criteria require review by an INFOCOM lecturer."
+learning_objectives:
+  - Verify user-generated content before responding publicly.
+  - Coordinate with internal stakeholders before making public claims.
+  - Write a transparent, accurate public statement and answer journalists professionally.
+  - Avoid amplifying unverified claims and avoid misleading denials.
+  - Design a reputation recovery plan grounded in actions, not just messages.
+
+context:
+  organization: Golden Spoon Catering (fictional), Cairo — supplies meals to offices and schools
+  student_role: Public Relations Officer
+  briefing: >
+    At 9:00 a video started trending: it appears to show staff in a "Golden Spoon kitchen"
+    reusing expired ingredients. Comments are angry, a school parents' group is sharing it, and a
+    journalist has already emailed. Your head of communications is travelling and has asked you to
+    lead the first response. Audience reactions in this simulation are simulated outcomes, not real
+    public opinion.
+  fictional_notice: "All organisations, people, videos and audience reactions in this simulation are fictional. Audience sentiment figures are simulated outcomes, not real public opinion."
+
+difficulties:
+  beginner:
+    time_limit_minutes: 480
+    description: Generous time and hints.
+  intermediate:
+    time_limit_minutes: 360
+    description: The journalist's deadline arrives sooner.
+  advanced:
+    time_limit_minutes: 300
+    description: An influencer amplifies the video.
+  professional:
+    time_limit_minutes: 240
+    hints_available: false
+    description: Influencer pressure, a tight deadline and no hints.
+
+variables:
+  public_sentiment:
+    label: Simulated audience sentiment
+    initial: 35
+    min: 0
+    max: 100
+    unit: "%"
+    description: A simulated indicator, not real public opinion.
+  media_pressure:
+    label: Media pressure
+    initial: 60
+    min: 0
+    max: 100
+    unit: "%"
+  credibility:
+    label: Organisational credibility
+    initial: 70
+    min: 0
+    max: 100
+    unit: "%"
+  misinformation_spread:
+    label: Spread of the false narrative
+    initial: 50
+    min: 0
+    max: 100
+    unit: "%"
+  verified:
+    label: Video verified
+    initial: 0
+    min: 0
+    max: 1
+    visible: false
+
+characters:
+  - id: rania
+    name: Rania Fathy
+    role: Head of Communications
+    kind: manager
+    organization: Golden Spoon Catering
+    personality: Experienced, calm under pressure, values accuracy over speed.
+    communication_style: Short messages from the airport; asks what is verified.
+    objectives:
+      - Protect public trust in the company.
+      - Avoid any statement that later proves false.
+    knowledge:
+      - Nothing may be published without checking facts with Operations.
+      - A short holding statement can be published without full facts if it promises an update.
+    initial_mood: concerned
+    faq:
+      - keywords: [delete, remove comments, hide]
+        reply: "Don't delete comments — it always looks like we're hiding something."
+      - keywords: [deny, fake]
+        reply: "Only say it's false if we've verified it. If we deny and something comes out later, we lose all credibility."
+    fallback_replies:
+      - "Boarding soon. What do we know for sure?"
+      - "Accuracy first, then speed."
+
+  - id: karim_ops
+    name: Karim Salem
+    role: Operations Director
+    kind: colleague
+    organization: Golden Spoon Catering
+    personality: Defensive about his team, but honest when asked directly.
+    communication_style: Direct, slightly irritated by "PR questions".
+    objectives:
+      - Protect his kitchen staff's reputation.
+    knowledge:
+      - Golden Spoon's kitchens moved to new premises in Nasr City 18 months ago.
+      - The tiles and equipment in the video do not match the current kitchens.
+    restricted:
+      - fact: Last month a routine food-safety inspection found one minor labelling issue in the cold store; it was corrected within a week and the report is on file.
+        reveal_when: { action_taken: consult_operations }
+    initial_mood: frustrated
+    faq:
+      - keywords: [kitchen, premises, where]
+        reply: "Our kitchens are in Nasr City now — new building, new equipment."
+    fallback_replies:
+      - "My team does good work. What exactly do you need?"
+      - "I'm in the middle of service, keep it short."
+
+  - id: nadia
+    name: Nadia Hussein
+    role: Digital Content Analyst
+    kind: colleague
+    organization: Golden Spoon Catering
+    personality: Curious, methodical, enjoys investigation.
+    communication_style: Enthusiastic, explains her methods.
+    objectives:
+      - Find out where the video really comes from.
+    knowledge:
+      - Reverse image search and upload dates can show when a video first appeared online.
+    initial_mood: calm
+    faq:
+      - keywords: [sentiment, comments, reaction]
+        reply: "The angry comments come mostly from a few big shares. Remember these numbers are only part of the public."
+    fallback_replies:
+      - "Give me a few minutes, I'm checking sources."
+
+  - id: hany
+    name: Hany Adel
+    role: Reporter
+    kind: journalist
+    organization: Cairo Daily Digest (fictional news site)
+    personality: Professional, persistent, fair if given facts.
+    communication_style: Polite, precise questions, mentions deadlines.
+    objectives:
+      - Publish an accurate story before competitors.
+      - Get an on-the-record comment from the company.
+    knowledge:
+      - His deadline is 14:00.
+      - He has seen the video and the parents' group posts.
+    initial_mood: neutral
+    faq:
+      - keywords: [deadline, when, time]
+        reply: "I'm filing at 14:00. A comment before then would be appreciated."
+      - keywords: [off the record]
+        reply: "I'd prefer something on the record, but I'm listening."
+    fallback_replies:
+      - "Can you confirm whether the video shows your kitchen?"
+      - "Do you have a statement I can quote?"
+
+documents:
+  - id: viral_post
+    title: Viral post (screenshot description)
+    kind: social_media
+    body: |
+      **Post by @CairoFoodWatch (simulated):**
+      "Look what GOLDEN SPOON feeds our kids!! 🤢 Expired food reused in their kitchen. Share before they delete it!!"
+      [Video, 0:42 — a kitchen with green wall tiles; a worker scrapes food from containers; a calendar on the wall is partly visible.]
+
+      Shares: 12,400 · Comments: 3,100 (simulated figures)
+  - id: comment_sample
+    title: Sample of comments (simulated)
+    kind: social_media
+    body: |
+      - "My son eats this every day at school. Disgusting." (simulated)
+      - "Is this even their kitchen? Looks old." (simulated)
+      - "Boycott Golden Spoon!" (simulated)
+      - "I work near their Nasr City place, it's spotless." (simulated)
+  - id: verification_report
+    title: Verification findings (Nadia)
+    kind: report
+    initially_visible: false
+    body: |
+      - Earliest upload found: **March, two years ago**, on a different account, captioned as a restaurant in Giza (not Golden Spoon).
+      - Green wall tiles and the wall calendar (two years old) do not match Golden Spoon's current Nasr City kitchens (white tiles, opened 18 months ago).
+      - Conclusion: **the video does not show a current Golden Spoon kitchen.** Confidence: high, but we cannot confirm the original location with certainty.
+  - id: inspection_summary
+    title: Food-safety inspection summary (last month)
+    kind: report
+    initially_visible: false
+    body: |
+      Routine inspection, Nasr City kitchen. Result: **satisfactory**.
+      One minor finding: two cold-store containers lacked date labels. **Corrected within 7 days**; follow-up check passed.
+  - id: crisis_policy
+    title: Crisis communication policy (extract)
+    kind: policy
+    body: |
+      1. Verify before making factual claims.
+      2. A holding statement may be issued within 1–2 hours: acknowledge, show concern, say what we are doing, promise an update.
+      3. Never delete critical comments; respond with facts where useful.
+      4. Be transparent about any relevant real issues — they will come out.
+      5. Do not repeat or link the false content unnecessarily.
+
+tasks:
+  - id: review_information
+    title: Review the available information
+    description: Look at the viral post, comments and the crisis policy.
+    hints:
+      - "Note what you actually know versus what is being claimed."
+  - id: verify_facts
+    title: Verify the video
+    description: Find out whether the video really shows a Golden Spoon kitchen.
+    hints:
+      - "Ask Nadia to check where and when the video first appeared."
+  - id: consult_internal
+    title: Consult internal stakeholders
+    description: Check the facts with Operations and keep the head of communications informed.
+    hints:
+      - "Ask Operations directly whether there have been any real food-safety issues recently."
+  - id: respond_journalist
+    title: Respond to the journalist
+    description: Give the reporter an accurate, on-the-record response.
+    hints:
+      - "Say what you can confirm and when you will know more. Never 'no comment'."
+  - id: public_statement
+    title: Publish a public statement
+    description: Write and publish a statement for the company's channels.
+    hints:
+      - "Lead with the verified facts, acknowledge concern, be transparent about the inspection, and say what happens next."
+  - id: recovery_plan
+    title: Develop a reputation recovery strategy
+    description: Plan the next weeks of communication and action.
+    hints:
+      - "Recovery depends on actions: open kitchen visits, published inspection results, direct contact with the parents' group."
+
+initial_inbox:
+  - id: rania_brief
+    sender: rania
+    subject: "Video — please lead the response"
+    body: |
+      I'm at the airport. A video about "our kitchen" is everywhere. Please lead the first response.
+      Check facts with Karim (Operations) and Nadia can help verify the video. No denials until we're sure.
+      Rania
+  - id: journalist_email
+    sender: hany
+    subject: "Request for comment — viral kitchen video"
+    body: |
+      Good morning, I'm writing a story about the video circulating of what is described as a Golden Spoon kitchen.
+      Can you confirm whether it shows your premises, and do you have a comment? My deadline is 14:00.
+      Hany Adel, Cairo Daily Digest
+
+actions:
+  - id: review_post_and_comments
+    label: Review the post, comments and crisis policy
+    description: Analyse the viral content and what people are saying.
+    category: investigation
+    duration_minutes: 15
+    completes_tasks: [review_information]
+    consequence: You note the green tiles, the partly visible calendar, and a comment questioning whether it is really Golden Spoon's kitchen.
+    training_feedback: Careful observation often provides the first verification clues.
+
+  - id: ask_nadia_verify
+    label: Ask Nadia to verify the video's origin
+    description: Request reverse search and date checks.
+    category: investigation
+    duration_minutes: 30
+    via_character: nadia
+    intent_keywords: [verify, origin, source, reverse, where, when, first, check the video, authentic]
+    completes_tasks: [verify_facts]
+    reveals_documents: [verification_report]
+    effects:
+      - { var: verified, op: set, value: 1 }
+      - { var: credibility, value: 5 }
+    consequence: Nadia finds the video was first posted two years ago about a restaurant in Giza — not a current Golden Spoon kitchen.
+    character_response: "Found it! Earliest upload is two years ago, captioned as a Giza restaurant. Tiles and calendar don't match our Nasr City kitchens. Full notes are in your documents."
+    training_feedback: Verification before amplification — now you can correct the record with evidence.
+
+  - id: consult_operations
+    label: Consult Operations about the facts
+    description: Ask Karim about the kitchens and any real food-safety issues.
+    category: communication
+    duration_minutes: 15
+    via_character: karim_ops
+    intent_keywords: [inspection, issue, problem, kitchen, food safety, hygiene, recent, anything]
+    completes_tasks: [consult_internal]
+    reveals_documents: [inspection_summary]
+    effects: [ { var: credibility, value: 3 } ]
+    consequence: Karim confirms the kitchen moved and — when asked directly — mentions last month's minor labelling finding, already corrected.
+    character_response: "That's not our kitchen — we moved 18 months ago. And to be fully honest: last month's inspection found two unlabelled containers in the cold store. Fixed within a week. Report's in your documents."
+    training_feedback: Asking directly about real issues prevents nasty surprises after you go public.
+
+  - id: issue_holding_statement
+    label: Publish a holding statement now
+    description: Acknowledge concern, say you are investigating and promise an update today.
+    category: decision
+    duration_minutes: 10
+    requires_justification: true
+    effects:
+      - { var: public_sentiment, value: 8 }
+      - { var: media_pressure, value: -10 }
+    consequence: The holding statement slows the spread of speculation; people see the company is responding.
+    training_feedback: A holding statement buys time without making claims you cannot yet support.
+
+  - id: deny_immediately
+    label: Publicly deny the video as fake immediately
+    description: Post that the video is fake and has nothing to do with Golden Spoon.
+    category: decision
+    duration_minutes: 5
+    requires_justification: true
+    available_when: { not: { action_taken: publish_full_statement } }
+    effects:
+      - { var: public_sentiment, value: 5 }
+      - { var: credibility, value: -10 }
+    consequence: Your denial is shared widely — and so is a parent's question about "last month's inspection".
+    training_feedback: Denials before verification are risky; and a blanket denial invites people to find any real issue.
+
+  - id: delete_negative_comments
+    label: Delete the most negative comments
+    description: Remove hostile comments from the company's pages.
+    category: decision
+    duration_minutes: 5
+    effects:
+      - { var: public_sentiment, value: -15 }
+      - { var: credibility, value: -15 }
+      - { var: misinformation_spread, value: 10 }
+    consequence: Screenshots of deleted comments circulate with "they're hiding something" (simulated reaction).
+    training_feedback: Deleting criticism usually backfires and violates the crisis policy.
+
+  - id: brief_rania
+    label: Brief the head of communications
+    description: Send Rania a short update on what is verified and your plan.
+    category: communication
+    duration_minutes: 10
+    via_character: rania
+    intent_keywords: [update, verified, plan, statement, brief, recommend, propose]
+    effects: [ { var: credibility, value: 2 } ]
+    consequence: Rania approves your approach and asks to see the statement before it goes live.
+    character_response: "Thanks — good work. Lead with the facts, be open about the inspection, don't link the video. Send me the statement."
+
+  - id: reply_journalist
+    label: Reply to the journalist on the record
+    description: Give Hany a factual comment and offer further information.
+    category: communication
+    duration_minutes: 15
+    via_character: hany
+    intent_keywords: [statement, comment, confirm, verified, our kitchen, not our, on the record, update]
+    completes_tasks: [respond_journalist]
+    effects:
+      - { var: media_pressure, value: -10 }
+      - { var: misinformation_spread, value: -10 }
+    consequence: Hany includes your comment and the verification findings in his story.
+    character_response: "Thank you — that's helpful. I'll include that the footage appears to be two years old and from another location, and quote your statement."
+
+  - id: publish_full_statement
+    label: Publish the full public statement
+    description: Publish your written statement on the company's channels.
+    category: decision
+    duration_minutes: 10
+    requires_justification: true
+    available_when: { submitted: public_statement }
+    completes_tasks: [public_statement]
+    effects:
+      - { var: public_sentiment, value: 15 }
+      - { var: misinformation_spread, value: -15 }
+    consequence: The statement is published. Reactions start to shift as people read the verification findings (simulated).
+    training_feedback: Publishing after verification and internal sign-off makes the statement durable.
+
+  - id: disclose_inspection
+    label: Proactively disclose last month's inspection result
+    description: Include the minor, corrected inspection finding in your communication.
+    category: decision
+    duration_minutes: 5
+    available_when: { action_taken: consult_operations }
+    effects:
+      - { var: credibility, value: 12 }
+      - { var: public_sentiment, value: 3 }
+    consequence: Disclosing the minor finding yourself removes the "they're hiding something" angle.
+    training_feedback: Transparency about real issues — even small ones — strengthens credibility.
+
+events:
+  - id: trending
+    title: Video trending
+    at_minute: 45
+    effects:
+      - { var: misinformation_spread, value: 10 }
+      - { var: media_pressure, value: 5 }
+    notification: "The video is trending (simulated): more shares from parents' groups."
+
+  - id: audience_wave
+    title: Simulated audience reaction
+    at_minute: 120
+    when: { not: { action_taken: issue_holding_statement } }
+    effects:
+      - { var: public_sentiment, value: -10 }
+      - { var: misinformation_spread, value: 10 }
+    notification: "Simulated reaction: 'Why is Golden Spoon silent?' is the top comment."
+
+  - id: journalist_deadline
+    title: Journalist deadline approaching
+    at_minute: 150
+    when: { not: { action_taken: reply_journalist } }
+    message:
+      sender: hany
+      subject: "Filing soon"
+      body: "I'm filing within the hour. Without a comment I'll have to write that the company did not respond."
+    effects: [ { var: media_pressure, value: 10 } ]
+    notification: The journalist will publish soon without your comment.
+
+  - id: journalist_deadline_early
+    title: Journalist deadline (early)
+    at_minute: 90
+    min_difficulty: intermediate
+    when: { not: { action_taken: reply_journalist } }
+    message:
+      sender: hany
+      subject: "Any comment?"
+      body: "Following up — can you give me anything on the record?"
+    notification: The journalist is following up.
+
+  - id: influencer
+    title: Influencer amplification
+    at_minute: 75
+    min_difficulty: advanced
+    effects:
+      - { var: misinformation_spread, value: 15 }
+      - { var: public_sentiment, value: -5 }
+    notification: "A food influencer (simulated, 800k followers) shares the video."
+
+  - id: inspection_leak
+    title: Inspection becomes public
+    when: { all: [ { action_taken: deny_immediately }, { not: { action_taken: disclose_inspection } } ] }
+    effects:
+      - { var: credibility, value: -15 }
+      - { var: media_pressure, value: 10 }
+    notification: "Parents ask why the company 'denied everything' when there was an inspection finding last month (simulated)."
+
+submissions:
+  - id: public_statement
+    title: Public statement
+    min_words: 80
+    prompt: >
+      Write the public statement for Golden Spoon's website and social channels (about 120–220
+      words). It should be accurate, acknowledge concern, state verified facts without repeating
+      the false claim more than necessary, mention relevant real information, and say what happens
+      next.
+  - id: recovery_strategy
+    title: Reputation recovery strategy
+    task_id: recovery_plan
+    min_words: 100
+    prompt: >
+      Outline a reputation recovery strategy for the next four weeks: audiences, actions,
+      channels, spokespeople, how you will measure progress, and risks.
+
+outcomes:
+  - id: trust_restored
+    title: Facts established, trust recovering
+    description: The false narrative was corrected with verified evidence, the company was transparent, and credibility held.
+    when:
+      all:
+        - { var: verified, op: "==", value: 1 }
+        - { action_taken: publish_full_statement }
+        - { var: credibility, op: ">=", value: 75 }
+        - { not: { action_taken: delete_negative_comments } }
+  - id: corrected_but_damaged
+    title: Facts corrected, credibility damaged
+    description: The record was eventually corrected, but early missteps cost credibility.
+    when: { all: [ { var: verified, op: "==", value: 1 }, { action_taken: publish_full_statement } ] }
+  - id: silence
+    title: Narrative left unchallenged
+    description: No verified public statement was made; the false narrative continued to spread.
+    when: { not: { action_taken: publish_full_statement } }
+  - id: mixed
+    title: Mixed result
+    description: A statement was published, but without solid verification.
+
+alternative_approaches:
+  - Holding statement early, verify with Nadia, check facts with Operations, then publish a full statement that leads with verified facts and discloses the minor inspection finding.
+  - Brief the journalist on the record with verified facts first, then publish — useful when the story is about to break.
+  - Combine the statement with an invitation to parents to visit the kitchen, turning the crisis into a transparency opportunity.
+
+rubric:
+  title: INFOCOM — crisis communication rubric
+  criteria:
+    - id: crisis_management
+      name: Crisis management
+      competency: crisis_management
+      weight: 20
+      description: Responds in a timely, structured way, following the crisis policy.
+      evidence_sources: [actions, "submission:recovery_strategy"]
+      objective_weight: 0.5
+      objective_base: 25
+      objective_signals:
+        - { when: { action_taken: issue_holding_statement }, points: 35, description: "Issued a timely holding statement." }
+        - { when: { action_taken: brief_rania }, points: 15, description: "Kept the head of communications informed." }
+        - { when: { not: { event_fired: audience_wave } }, points: 15, description: "Responded before silence became the story." }
+        - { when: { action_taken: delete_negative_comments }, points: -30, description: "Deleted critical comments." }
+      expected_concepts: [holding statement, timeline, spokesperson, monitor, stakeholder, update]
+      concepts_to_revise: [Crisis management basics, Holding statements and public statements]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Reactive or chaotic response." }
+        - { score: 50, label: Developing, descriptor: "Some structure; timing or coordination weak." }
+        - { score: 75, label: Proficient, descriptor: "Timely, coordinated response following policy." }
+        - { score: 95, label: Excellent, descriptor: "Calm, well-sequenced response with clear ownership." }
+    - id: information_verification
+      name: Information verification
+      competency: information_verification
+      weight: 20
+      description: Verifies the video and the facts before making claims.
+      evidence_sources: [actions, "messages:nadia", "messages:karim_ops", "submission:public_statement"]
+      objective_weight: 0.6
+      objective_base: 15
+      objective_signals:
+        - { when: { action_taken: ask_nadia_verify }, points: 50, description: "Verified the video's origin." }
+        - { when: { action_taken: consult_operations }, points: 30, description: "Checked the facts with Operations." }
+        - { when: { all: [ { action_taken: deny_immediately }, { var: verified, op: "==", value: 0 } ] }, points: -30, description: "Denied before verifying." }
+      expected_concepts: [two years, verified, giza, not our, tiles, original, source]
+      concepts_to_revise: [Information verification]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Claims made without verification." }
+        - { score: 50, label: Developing, descriptor: "Partial verification." }
+        - { score: 75, label: Proficient, descriptor: "Key facts verified before public claims." }
+        - { score: 95, label: Excellent, descriptor: "Rigorous verification with confidence levels stated." }
+    - id: public_communication
+      name: Public communication
+      competency: public_communication
+      weight: 20
+      description: The statement and journalist response are clear, accurate, empathetic and quotable.
+      evidence_sources: ["submission:public_statement", "messages:hany"]
+      objective_weight: 0.3
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: reply_journalist }, points: 40, description: "Gave the journalist an on-the-record response." }
+        - { when: { action_taken: publish_full_statement }, points: 30, description: "Published a full statement." }
+      expected_concepts: [concern, verified, kitchen, inspection, parents, update, transparen]
+      concepts_to_revise: [Responding to journalists, Holding statements and public statements]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Unclear, defensive or inaccurate." }
+        - { score: 50, label: Developing, descriptor: "Understandable but incomplete or impersonal." }
+        - { score: 75, label: Proficient, descriptor: "Clear, accurate and empathetic." }
+        - { score: 95, label: Excellent, descriptor: "Compelling, precise and audience-aware." }
+    - id: media_literacy
+      name: Media literacy
+      competency: media_literacy
+      weight: 10
+      description: Understands amplification, avoids spreading the false claim and reads simulated reactions critically.
+      evidence_sources: ["submission:public_statement", "submission:recovery_strategy"]
+      expected_concepts: [amplif, share, algorithm, reach, simulated, not repeat, platform]
+      concepts_to_revise: [Misinformation and not amplifying false claims, Media literacy]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Repeats or links the false content; ignores platform dynamics." }
+        - { score: 50, label: Developing, descriptor: "Some awareness of amplification." }
+        - { score: 75, label: Proficient, descriptor: "Avoids amplifying the claim; reads reactions critically." }
+        - { score: 95, label: Excellent, descriptor: "Uses platform dynamics deliberately to spread the correction." }
+    - id: reputation_management
+      name: Reputation management
+      competency: reputation_management
+      weight: 15
+      description: Recovery plan is concrete, action-based and measurable.
+      evidence_sources: ["submission:recovery_strategy"]
+      objective_weight: 0.3
+      objective_base: 20
+      objective_signals:
+        - { when: { var: credibility, op: ">=", value: 75 }, points: 50, description: "Ended with high credibility." }
+        - { when: { var: public_sentiment, op: ">=", value: 55 }, points: 30, description: "Simulated sentiment recovered." }
+      expected_concepts: [visit, open, inspection, measure, parents, school, week, monitor]
+      concepts_to_revise: [Reputation management and recovery]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "No recovery plan or only slogans." }
+        - { score: 50, label: Developing, descriptor: "Some actions, vague measurement." }
+        - { score: 75, label: Proficient, descriptor: "Concrete actions with audiences and measures." }
+        - { score: 95, label: Excellent, descriptor: "Comprehensive, credible, measurable plan." }
+    - id: ethics
+      name: Professional ethics
+      competency: professional_ethics
+      weight: 15
+      description: Is transparent about the real inspection finding and avoids misleading or suppressive tactics.
+      evidence_sources: [actions, "submission:public_statement"]
+      objective_weight: 0.6
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: disclose_inspection }, points: 50, description: "Proactively disclosed the minor inspection finding." }
+        - { when: { action_taken: delete_negative_comments }, points: -30, description: "Suppressed criticism." }
+        - { when: { action_taken: deny_immediately }, points: -15, description: "Made a blanket denial." }
+      expected_concepts: [inspection, label, corrected, transparen, honest]
+      concepts_to_revise: [Professional ethics in communication]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Misleading or suppressive communication." }
+        - { score: 50, label: Developing, descriptor: "Not misleading, but not transparent about relevant facts." }
+        - { score: 75, label: Proficient, descriptor: "Transparent about relevant facts." }
+        - { score: 95, label: Excellent, descriptor: "Proactively transparent with clear accountability." }

@@ -1,0 +1,585 @@
+# Translation — Scenario 1: Demanding International Client
+# All companies, people and products are fictional.
+slug: demanding-client
+specialization: translation
+title: Demanding International Client
+summary: >
+  A British drinks brand wants its launch campaign translated into Arabic for young Egyptian
+  audiences. Analyse the source, clarify the brief, translate and localise the copy, handle a
+  misleading product claim, respond to client feedback and deliver a final version.
+estimated_minutes: 40
+review_status: "Draft: translation criteria and Arabic expectations require review by a translation lecturer."
+learning_objectives:
+  - Analyse a source text and translation brief to identify purpose, audience and register.
+  - Ask focused clarification questions instead of guessing.
+  - Produce an Arabic marketing translation that preserves meaning and adapts cultural references.
+  - Recognise and professionally flag a potentially misleading claim.
+  - Handle client feedback by separating errors from preferences.
+
+context:
+  organization: Lisan Language Services (fictional), Cairo — translation and localisation agency
+  student_role: Junior Translator (English → Arabic)
+  briefing: >
+    Blue Oasis Drinks (UK) is launching "Sahara Fresh" iced tea in Egypt. They want their short
+    Instagram campaign copy translated into Arabic for 18–30-year-old Egyptians. The client is
+    known to be demanding and the deadline is today. Your project manager has assigned the job
+    to you.
+
+difficulties:
+  beginner:
+    time_limit_minutes: 480
+    description: Generous time and hints.
+  intermediate:
+    time_limit_minutes: 360
+    description: Less time; the client chases you sooner.
+  advanced:
+    time_limit_minutes: 300
+    description: The client adds a late change to the brief.
+  professional:
+    time_limit_minutes: 240
+    hints_available: false
+    description: Tight deadline, late change, no hints.
+
+variables:
+  client_satisfaction:
+    label: Client satisfaction
+    initial: 55
+    min: 0
+    max: 100
+    unit: "%"
+  quality_risk:
+    label: Quality risk
+    initial: 55
+    min: 0
+    max: 100
+    unit: "%"
+  reputation:
+    label: Agency reputation
+    initial: 70
+    min: 0
+    max: 100
+    unit: "%"
+  claim_flagged:
+    label: Claim issue flagged
+    initial: 0
+    min: 0
+    max: 1
+    visible: false
+
+characters:
+  - id: hoda
+    name: Hoda Mansour
+    role: Project Manager
+    kind: manager
+    organization: Lisan Language Services
+    personality: Organised, supportive, protective of the agency's reputation.
+    communication_style: Friendly and brief; expects professional judgement.
+    objectives:
+      - Deliver on time without quality problems.
+      - Keep Blue Oasis as a long-term client.
+    knowledge:
+      - The client's marketing manager is Emily Carter.
+      - Agency policy is to flag any claim that may mislead consumers rather than silently change it.
+      - Youssef, the senior reviser, is available to review drafts today.
+    initial_mood: calm
+    faq:
+      - keywords: [dialect, colloquial, fusha, standard, register]
+        reply: "Our style guide says Egyptian colloquial works for informal social media, but check with the client — it's their brand voice."
+      - keywords: [deadline, when, time]
+        reply: "Final delivery is due by end of day. Send me the final once the client has signed off."
+    fallback_replies:
+      - "Keep me posted — and remember our style guide."
+      - "Use your judgement and document your choices."
+
+  - id: emily
+    name: Emily Carter
+    role: Marketing Manager
+    kind: client
+    organization: Blue Oasis Drinks (fictional), London
+    personality: Energetic, impatient, very attached to her English slogans.
+    communication_style: Informal, writes in English, short messages, many exclamation marks.
+    objectives:
+      - Launch on time with copy that feels "local and fun".
+      - Keep the brand name and slogan recognisable.
+    knowledge:
+      - The audience is Egyptians aged 18–30 on Instagram.
+      - The brand name "Sahara Fresh" must stay in Latin letters.
+      - The price in Egypt will be 25 EGP per bottle.
+    restricted:
+      - fact: She is happy for the slogan to be adapted rather than translated literally, as long as it keeps the idea of refreshment.
+        reveal_when: { action_taken: ask_client_clarification }
+      - fact: Legal in London confirmed the product has no added sugar but contains natural fruit sugars, so "sugar-free" is not accurate.
+        reveal_when: { action_taken: flag_sugar_claim }
+    initial_mood: neutral
+    faq:
+      - keywords: [price, cost, egp]
+        reply: "It'll be 25 EGP a bottle!"
+      - keywords: [brand, name, sahara]
+        reply: "Please keep 'Sahara Fresh' in English letters — it's on the bottle."
+      - keywords: [deadline, today, when]
+        reply: "Today please!! The campaign goes live tomorrow morning."
+    fallback_replies:
+      - "Super busy today — can you just make it sound local?"
+      - "Great, thanks! Keep me posted!"
+
+  - id: youssef
+    name: Youssef Nabil
+    role: Senior Reviser
+    kind: colleague
+    organization: Lisan Language Services
+    personality: Meticulous, kind, slightly pedantic about punctuation.
+    communication_style: Calm and precise; gives concrete suggestions.
+    objectives:
+      - Make sure nothing leaves the agency with errors.
+    knowledge:
+      - Common problems in drinks marketing translations are literal idioms and unchecked claims.
+      - Arabic punctuation (، ؟) and right-to-left display of Latin brand names need checking.
+    initial_mood: calm
+    faq:
+      - keywords: [punctuation, comma]
+        reply: "Use Arabic punctuation — ، and ؟ — and check the brand name sits correctly in the right-to-left line."
+    fallback_replies:
+      - "Send it over when you're ready and I'll take a look."
+
+documents:
+  - id: source_text
+    title: Source text — Sahara Fresh launch campaign (EN)
+    kind: source
+    body: |
+      **Post 1**
+      Sahara Fresh is here! 🌴 A breath of fresh air for your summer.
+      Beat the heat with real tea, real lemon and zero sugar.
+
+      **Post 2**
+      Hanging out with the gang? Fire up the BBQ and grab a Sahara Fresh.
+      It's a total game changer.
+
+      **Post 3 (slogan)**
+      Sahara Fresh — Stay cool, stay you.
+      Available at all major supermarkets. Only £1.20!
+  - id: client_brief
+    title: Client brief
+    kind: brief
+    body: |
+      - Client: Blue Oasis Drinks (UK)
+      - Product: Sahara Fresh iced tea (lemon)
+      - Market: Egypt · Channel: Instagram
+      - Audience: 18–30, urban
+      - Request: "Translate into Arabic. Make it sound local!"
+      - Deadline: today, end of day
+  - id: spec_sheet
+    title: Product specification sheet (extract)
+    kind: specification
+    body: |
+      **Sahara Fresh Lemon Iced Tea — 330 ml**
+
+      Ingredients: water, black tea extract (0.15%), lemon juice from concentrate (5%), natural lemon flavouring, citric acid.
+
+      Nutrition per 100 ml: energy 6 kcal, carbohydrates 1.4 g, **of which sugars 1.4 g (naturally occurring from fruit)**.
+
+      Claim approved by UK legal: **"no added sugar"**.
+  - id: style_guide
+    title: Lisan style guide (extract)
+    kind: guide
+    body: |
+      - Social media for young Egyptian audiences: Egyptian colloquial (العامية المصرية) is acceptable when the client agrees.
+      - Formal/pan-Arab material: Modern Standard Arabic (الفصحى).
+      - Brand names stay in Latin script unless the client requests otherwise.
+      - Use Arabic punctuation (، ؛ ؟).
+      - Never translate a product claim in a way that changes its meaning; flag doubtful claims to the PM and the client.
+      - Currency and prices must be localised.
+  - id: reviser_notes
+    title: Reviser notes (Youssef)
+    kind: notes
+    initially_visible: false
+    body: |
+      Things I'd check in your draft:
+      1. "A breath of fresh air" and "game changer" — don't translate literally; find natural Egyptian equivalents.
+      2. "BBQ with the gang" — fine in Egypt, but "شوي" or "خروجة مع الصحاب" may feel more local.
+      3. "Zero sugar" vs the spec sheet — this looks like a claim problem.
+      4. £1.20 means nothing to Egyptians — use the EGP price.
+      5. Arabic punctuation and right-to-left placement of "Sahara Fresh".
+
+tasks:
+  - id: analyse_source
+    title: Analyse the source text and brief
+    description: Read the source text, brief, specification sheet and style guide.
+    hints:
+      - "Compare every product claim in the source text with the specification sheet."
+  - id: clarify_brief
+    title: Clarify the brief with the client
+    description: Ask focused questions about register, slogan and anything unclear.
+    hints:
+      - "One message with grouped questions: dialect/register, slogan adaptation, brand name, price."
+  - id: decide_register
+    title: Decide the register
+    description: Choose and justify the Arabic register for this audience and channel.
+    hints:
+      - "Who is the audience and where will they read it? Check the style guide."
+  - id: translate_draft
+    title: Submit a first draft
+    description: Translate and localise the three posts.
+    hints:
+      - "Translate the effect, not the words: 'beat the heat' and 'game changer' need natural equivalents."
+  - id: handle_feedback
+    title: Respond to client feedback
+    description: Reply professionally to the client's comments.
+    initially_visible: false
+    hints:
+      - "Accept real errors, explain your choices politely where you disagree, and confirm what changes."
+  - id: deliver_final
+    title: Deliver the final translation
+    description: Submit the final translation and a short translator's note.
+    hints:
+      - "The translator's note should explain register, adaptations and the claim issue."
+
+initial_inbox:
+  - id: pm_assignment
+    sender: hoda
+    subject: "New job: Sahara Fresh Instagram campaign"
+    body: |
+      Hi! Blue Oasis needs their Sahara Fresh launch posts in Arabic for Egypt — source, brief, spec sheet and our style guide are in your documents.
+      The client wants it "local". Please clarify anything unclear with Emily directly. Youssef can revise your draft.
+      Final due today.
+      Hoda
+  - id: client_hello
+    sender: emily
+    subject: "Sahara Fresh Arabic!!"
+    body: |
+      Hi! Super excited for Egypt!! Please make the posts sound totally local and fun.
+      Keep it punchy — and keep "zero sugar", that's our big selling point!
+      Thanks!! Emily
+
+actions:
+  - id: analyse_documents
+    label: Analyse source text, brief and spec sheet
+    description: Read all job documents carefully and note problems.
+    category: investigation
+    duration_minutes: 20
+    completes_tasks: [analyse_source]
+    effects: [ { var: quality_risk, value: -10 } ]
+    consequence: You notice idioms that won't work literally, a price in GBP, and that the spec sheet says "no added sugar" while the copy says "zero sugar".
+    training_feedback: Source analysis comes first — comparing the copy with the spec sheet is what reveals the claim problem.
+
+  - id: ask_client_clarification
+    label: Ask the client clarification questions
+    description: Send Emily grouped questions on register, slogan adaptation, brand name and price.
+    category: communication
+    duration_minutes: 15
+    via_character: emily
+    intent_keywords: [clarif, question, should, dialect, colloquial, register, slogan, adapt, confirm, prefer]
+    completes_tasks: [clarify_brief]
+    effects:
+      - { var: client_satisfaction, value: 8 }
+      - { var: quality_risk, value: -10 }
+    consequence: Emily confirms an informal Egyptian tone, keeping "Sahara Fresh" in Latin letters, the 25 EGP price, and that the slogan can be adapted.
+    character_response: "Good questions! Friendly Egyptian tone is perfect, keep 'Sahara Fresh' in English letters, price is 25 EGP, and yes — adapt the slogan, just keep the idea of staying cool and fresh!"
+    training_feedback: Focused, grouped questions save the client's time and prevent rework.
+
+  - id: flag_sugar_claim
+    label: Flag the "zero sugar" claim to the client
+    description: Explain that the spec sheet supports "no added sugar", not "zero sugar".
+    category: communication
+    duration_minutes: 15
+    via_character: emily
+    intent_keywords: [sugar, claim, mislead, no added, added sugar, accurate, spec sheet, legal]
+    effects:
+      - { var: claim_flagged, op: set, value: 1 }
+      - { var: reputation, value: 10 }
+      - { var: quality_risk, value: -10 }
+      - { var: client_satisfaction, value: 3 }
+    consequence: Emily checks with her legal team and agrees to use "no added sugar" (بدون سكر مضاف).
+    character_response: "Oh! You're right — legal says it's 'no added sugar' because of the fruit sugars. Please use that. Good catch, thank you!"
+    training_feedback: Flagging a misleading claim is an ethical duty and protects both the client and the agency.
+
+  - id: choose_egyptian_colloquial
+    label: "Register: Egyptian colloquial"
+    description: Use Egyptian colloquial Arabic for the campaign.
+    category: decision
+    duration_minutes: 5
+    requires_justification: true
+    exclusive_group: register
+    completes_tasks: [decide_register]
+    effects: [ { var: quality_risk, value: -5 } ]
+    consequence: You plan an informal Egyptian voice suited to young Instagram users.
+    training_feedback: Suits an 18–30 Egyptian Instagram audience — especially once the client has confirmed it.
+
+  - id: choose_msa
+    label: "Register: Modern Standard Arabic"
+    description: Use formal Modern Standard Arabic throughout.
+    category: decision
+    duration_minutes: 5
+    requires_justification: true
+    exclusive_group: register
+    completes_tasks: [decide_register]
+    effects: [ { var: client_satisfaction, value: -5 } ]
+    consequence: You plan a formal register; it is correct but may feel distant to the target audience.
+    training_feedback: Defensible for pan-Arab material, but the brief asks for a local, fun voice for young Egyptians.
+
+  - id: choose_light_msa
+    label: "Register: simplified MSA with colloquial touches"
+    description: Use light, simple Standard Arabic with a few Egyptian expressions.
+    category: decision
+    duration_minutes: 5
+    requires_justification: true
+    exclusive_group: register
+    completes_tasks: [decide_register]
+    consequence: You plan a middle-ground register that is accessible but slightly less local.
+    training_feedback: A reasonable compromise if the client had wanted wider regional reuse.
+
+  - id: request_revision
+    label: Ask Youssef to revise your draft
+    description: Send your first draft to the senior reviser.
+    category: communication
+    duration_minutes: 30
+    via_character: youssef
+    intent_keywords: [review, revise, check, look at, feedback on my draft, second pair]
+    available_when: { submitted: first_draft }
+    reveals_documents: [reviser_notes]
+    effects: [ { var: quality_risk, value: -15 } ]
+    consequence: Youssef sends you his revision notes.
+    character_response: "Had a look — I've put my notes in your documents. Mostly idioms, the price and that sugar claim."
+    training_feedback: Revision by a second linguist is standard professional practice (cf. ISO 17100).
+
+  - id: respond_feedback_professionally
+    label: Respond to the feedback professionally
+    description: Accept valid corrections, explain your choices where needed, and confirm changes.
+    category: communication
+    duration_minutes: 15
+    via_character: emily
+    intent_keywords: [thank, feedback, explain, because, suggest, keep, changed, agree, reason]
+    available_when: { event_fired: client_feedback }
+    completes_tasks: [handle_feedback]
+    effects:
+      - { var: client_satisfaction, value: 12 }
+      - { var: reputation, value: 5 }
+    consequence: Emily appreciates the explanations and accepts your proposed version.
+    character_response: "Makes sense — thanks for explaining! Go with your version for the slogan and fix the typo. Love it!"
+    training_feedback: Separating real errors from preferences — and explaining choices politely — builds trust.
+
+  - id: accept_all_changes
+    label: Accept every client change without discussion
+    description: Apply all of the client's comments exactly as written.
+    category: decision
+    duration_minutes: 10
+    available_when: { event_fired: client_feedback }
+    completes_tasks: [handle_feedback]
+    effects:
+      - { var: client_satisfaction, value: 5 }
+      - { var: quality_risk, value: 20 }
+    consequence: The client is pleased for now, but one requested change makes the slogan ungrammatical and another re-introduces a literal idiom.
+    training_feedback: "Clients deserve your expertise — explain when a requested change would reduce quality."
+
+  - id: reject_feedback
+    label: Reject the client's feedback
+    description: Tell the client your translation is correct and should not change.
+    category: communication
+    duration_minutes: 10
+    available_when: { event_fired: client_feedback }
+    completes_tasks: [handle_feedback]
+    effects:
+      - { var: client_satisfaction, value: -20 }
+      - { var: reputation, value: -10 }
+    consequence: Emily escalates to Hoda, unhappy that her comments were dismissed.
+    training_feedback: Even when you are right, dismissing feedback damages the relationship. Explain and offer options.
+
+events:
+  - id: client_chaser
+    title: Client chases progress
+    at_minute: 90
+    min_difficulty: intermediate
+    when: { not: { submitted: first_draft } }
+    message:
+      sender: emily
+      subject: "How's it going??"
+      body: "Hi! Any chance of seeing a draft soon? 😊"
+    effects: [ { var: client_satisfaction, value: -5 } ]
+    notification: The client is chasing you for a draft.
+
+  - id: client_feedback
+    title: Client feedback on the draft
+    when: { submitted: first_draft }
+    adds_tasks: [handle_feedback]
+    message:
+      sender: emily
+      subject: "Feedback on the Arabic"
+      body: |
+        Thanks!! A few comments from our Cairo sales rep:
+        1. Can we translate "game changer" literally? We love that phrase.
+        2. There's a typo in post 2 I think.
+        3. Can the slogan rhyme in Arabic like it does in English?
+        Thanks! Emily
+    notification: The client has sent feedback on your draft.
+
+  - id: late_change
+    title: Late change to the brief
+    at_minute: 150
+    min_difficulty: advanced
+    message:
+      sender: emily
+      subject: "One more thing!"
+      body: "Can you add a line to post 3 saying it's 'perfect after the gym'? Thanks!!"
+    effects: [ { var: quality_risk, value: 5 } ]
+    notification: The client has added a late change to the brief.
+
+  - id: deadline_reminder
+    title: Deadline reminder
+    at_minute: 200
+    when: { not: { submitted: final_translation } }
+    message:
+      sender: hoda
+      subject: "Deadline reminder"
+      body: "Hi — just a reminder the final is due by end of day. Please make sure it's been revised."
+    notification: Your project manager reminds you of the deadline.
+
+submissions:
+  - id: first_draft
+    title: First draft (Arabic)
+    task_id: translate_draft
+    min_words: 30
+    direction: rtl
+    language: ar
+    prompt: Translate and localise the three posts into Arabic for the target audience.
+    template: |
+      المنشور ١:
+
+      المنشور ٢:
+
+      المنشور ٣ (الشعار):
+  - id: final_translation
+    title: Final translation (Arabic)
+    task_id: deliver_final
+    min_words: 30
+    direction: rtl
+    language: ar
+    prompt: Submit your final, revised Arabic version of all three posts.
+  - id: translator_note
+    title: Translator's note to the client (English)
+    min_words: 50
+    prompt: >
+      In English, briefly explain your register choice, the main adaptations (idioms, slogan,
+      price) and how you handled the sugar claim.
+
+outcomes:
+  - id: excellent_delivery
+    title: Accurate, local and ethically sound
+    description: A final, localised translation was delivered, the misleading claim was corrected with the client's agreement, and the client is satisfied.
+    when:
+      all:
+        - { submitted: final_translation }
+        - { var: claim_flagged, op: "==", value: 1 }
+        - { var: client_satisfaction, op: ">=", value: 65 }
+  - id: delivered_claim_risk
+    title: Delivered, but with a misleading claim
+    description: The translation was delivered, but the "zero sugar" claim was never raised with the client — a legal and reputational risk.
+    when: { all: [ { submitted: final_translation }, { var: claim_flagged, op: "==", value: 0 } ] }
+  - id: delivered
+    title: Delivered, relationship strained
+    description: The final translation was delivered and the claim fixed, but the client relationship needs repair.
+    when: { submitted: final_translation }
+  - id: not_delivered
+    title: Final translation not delivered
+    description: The job ended without a final translation.
+
+alternative_approaches:
+  - Ask grouped clarification questions first, then translate in Egyptian colloquial, flag the claim and justify adaptations in a translator's note.
+  - Use light Modern Standard Arabic if the client plans to reuse the copy across Arab markets — and say so explicitly.
+  - When the client requests a literal idiom, offer two options (literal vs adapted) with a short explanation and let them choose.
+
+rubric:
+  title: Translation — localisation project rubric
+  criteria:
+    - id: translation_accuracy
+      name: Translation accuracy and preservation of meaning
+      competency: translation_accuracy
+      weight: 25
+      description: The final Arabic preserves the messages, product facts and calls to action of the source.
+      evidence_sources: ["submission:final_translation", "submission:first_draft"]
+      expected_concepts: ["Sahara Fresh", "ليمون", "شاي", "25", "جنيه", "سوبر ماركت", "منعش"]
+      concepts_to_revise: [Preservation of meaning, Translation brief and target audience]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Key messages or facts missing or distorted." }
+        - { score: 50, label: Developing, descriptor: "Most messages present; some distortions or omissions." }
+        - { score: 75, label: Proficient, descriptor: "Messages and facts preserved with minor issues." }
+        - { score: 95, label: Excellent, descriptor: "All messages, facts and calls to action preserved precisely." }
+    - id: cultural_adaptation
+      name: Cultural adaptation
+      competency: cultural_adaptation
+      weight: 20
+      description: Idioms, references, register and price are adapted for young Egyptian readers.
+      evidence_sources: ["submission:final_translation", actions]
+      objective_weight: 0.3
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: choose_egyptian_colloquial }, points: 40, description: "Chose a register suited to the audience." }
+        - { when: { action_taken: choose_light_msa }, points: 25, description: "Chose an accessible register." }
+        - { when: { action_taken: ask_client_clarification }, points: 25, description: "Confirmed register and slogan with the client." }
+      expected_concepts: ["جنيه", "الحر", "صحاب", "انتعاش", "خليك", "روق", "منعش"]
+      concepts_to_revise: [Cultural adaptation and localisation]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Literal translation; cultural references not adapted." }
+        - { score: 50, label: Developing, descriptor: "Some adaptation; several literal idioms remain." }
+        - { score: 75, label: Proficient, descriptor: "Natural, audience-appropriate text with adapted idioms and price." }
+        - { score: 95, label: Excellent, descriptor: "Fully localised voice that would read as native campaign copy." }
+    - id: terminology
+      name: Terminology and brand consistency
+      competency: terminology
+      weight: 10
+      description: Brand name, product terms and claims are rendered consistently and correctly.
+      evidence_sources: ["submission:final_translation"]
+      expected_concepts: ["Sahara Fresh", "بدون سكر مضاف", "شاي مثلج"]
+      concepts_to_revise: [Terminology and glossaries]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Brand or key terms wrong or inconsistent." }
+        - { score: 50, label: Developing, descriptor: "Mostly consistent; one key term problematic." }
+        - { score: 75, label: Proficient, descriptor: "Consistent, correct terminology." }
+        - { score: 95, label: Excellent, descriptor: "Consistent terminology including the corrected claim wording." }
+    - id: language_quality
+      name: Grammar and language quality
+      competency: language_quality
+      weight: 15
+      description: Correct, fluent Arabic with appropriate punctuation and right-to-left presentation.
+      evidence_sources: ["submission:final_translation"]
+      expected_concepts: ["،", "!", "—", "Sahara Fresh"]
+      concepts_to_revise: [Grammar, punctuation and right-to-left layout]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Frequent errors that hinder reading." }
+        - { score: 50, label: Developing, descriptor: "Several errors; mostly understandable." }
+        - { score: 75, label: Proficient, descriptor: "Fluent with few minor errors." }
+        - { score: 95, label: Excellent, descriptor: "Polished, publication-ready Arabic." }
+    - id: client_communication
+      name: Professional communication with the client
+      competency: communication
+      weight: 15
+      description: Clarifies requirements and handles feedback politely, clearly and efficiently.
+      evidence_sources: ["messages:emily", "submission:translator_note", actions]
+      objective_weight: 0.4
+      objective_base: 30
+      objective_signals:
+        - { when: { action_taken: ask_client_clarification }, points: 30, description: "Asked focused clarification questions." }
+        - { when: { action_taken: respond_feedback_professionally }, points: 40, description: "Handled feedback professionally." }
+        - { when: { action_taken: reject_feedback }, points: -25, description: "Dismissed the client's feedback." }
+      expected_concepts: [register, slogan, because, suggest, option, thank]
+      concepts_to_revise: [Clarification requests, Handling client feedback]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "No clarification; feedback ignored or handled poorly." }
+        - { score: 50, label: Developing, descriptor: "Some communication, unclear or reactive." }
+        - { score: 75, label: Proficient, descriptor: "Clear, polite and timely communication." }
+        - { score: 95, label: Excellent, descriptor: "Proactive, well-structured communication that adds expert value." }
+    - id: ethical_judgement
+      name: Ethical judgement
+      competency: professional_ethics
+      weight: 15
+      description: Identifies and flags the potentially misleading "zero sugar" claim instead of translating it unchanged.
+      evidence_sources: [actions, "messages:emily", "submission:translator_note"]
+      objective_weight: 0.6
+      objective_base: 10
+      objective_signals:
+        - { when: { action_taken: flag_sugar_claim }, points: 85, description: "Flagged the misleading claim to the client." }
+      expected_concepts: [sugar, claim, "no added", mislead, spec]
+      concepts_to_revise: [Professional ethics in translation]
+      levels:
+        - { score: 25, label: Not yet demonstrated, descriptor: "Misleading claim translated without comment." }
+        - { score: 50, label: Developing, descriptor: "Claim silently changed without informing the client." }
+        - { score: 75, label: Proficient, descriptor: "Claim flagged and corrected with the client." }
+        - { score: 95, label: Excellent, descriptor: "Claim flagged with clear reasoning, corrected and documented." }

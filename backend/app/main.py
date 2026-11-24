@@ -14,7 +14,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app import __version__
-from app.api import admin, auth, health, specializations, users
+from app.api import (
+    admin,
+    admin_platform,
+    auth,
+    health,
+    progress,
+    simulation,
+    specializations,
+    teach,
+    users,
+)
 from app.core.config import Settings, get_settings
 from app.db.session import Database
 from app.security.headers import SecurityHeadersMiddleware
@@ -64,7 +74,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(health.router)
     api = APIRouter(prefix=settings.api_prefix)
-    for module in (auth, users, specializations, admin):
+    for module in (
+        auth,
+        users,
+        specializations,
+        admin,
+        admin_platform,
+        simulation,
+        progress,
+        teach,
+    ):
         api.include_router(module.router)
     app.include_router(api)
     return app
