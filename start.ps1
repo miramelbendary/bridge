@@ -18,6 +18,16 @@ if ($Root.Length -gt 120) {
 }
 
 # --- prerequisites -------------------------------------------------------------------------
+# Windows Explorer keeps the PATH it had at sign-in, so a program installed afterwards (Node.js,
+# Python) is invisible to anything double-clicked. Reload PATH from the registry, then add the
+# default install folders as a last resort.
+$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+$env:Path = (@($machinePath, $userPath, $env:Path) | Where-Object { $_ }) -join ";"
+foreach ($dir in @("$env:ProgramFiles\nodejs", "$env:LOCALAPPDATA\Programs\Python\Launcher")) {
+  if ((Test-Path $dir) -and ($env:Path -notlike "*$dir*")) { $env:Path += ";$dir" }
+}
+
 $PyExe = $null
 $PyArgs = @()
 foreach ($candidate in @(@{ exe = "py"; args = @("-3") }, @{ exe = "python"; args = @() })) {
@@ -28,9 +38,15 @@ foreach ($candidate in @(@{ exe = "py"; args = @("-3") }, @{ exe = "python"; arg
   } catch {}
 }
 if (-not $PyExe) { Fail "Python 3.12 or newer is required. Install it from https://www.python.org/downloads/ (tick 'Add to PATH')." }
-if (-not (Get-Command node -ErrorAction SilentlyContinue)) { Fail "Node.js 20.9+ is required. Install the LTS version from https://nodejs.org/." }
-$nodeMajor = [int]((node --version).TrimStart("v").Split(".")[0])
-if ($nodeMajor -lt 20) { Fail "Node.js 20.9+ is required (found $(node --version))." }
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+  Fail "Node.js was not found. Install the LTS version from https://nodejs.org/, then sign out and back in (or restart) and try again."
+}
+$nodeVersion = (& node --version 2>$null | Out-String).Trim()
+$nodeMajor = 0
+if ($nodeVersion -match '^v(\d+)\.') { $nodeMajor = [int]$Matches[1] }
+if ($nodeMajor -lt 20) { Fail "Node.js 20.9+ is required, but 'node --version' returned '$nodeVersion'. Install the LTS version from https://nodejs.org/." }
+Write-Host "Using Python ($PyExe $($PyArgs -join ' ')) and Node.js $nodeVersion"
+if ($env:BRIDGE_CHECK_ONLY) { Write-Host "Prerequisites OK."; exit 0 }
 
 # --- backend --------------------------------------------------------------------------------
 $Venv = Join-Path $Backend ".venv"
